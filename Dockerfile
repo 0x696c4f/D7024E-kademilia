@@ -12,7 +12,9 @@ FROM debian:latest
 #
 # $ docker build . -t kadlab
 RUN apt update
-RUN apt install -yq netcat
+RUN apt install -yq netcat iproute2
+
+COPY ./src/ /src
 
 # go compile
 
