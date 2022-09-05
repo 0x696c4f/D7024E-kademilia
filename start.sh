@@ -20,4 +20,4 @@ COMMAND="$COMMAND $OPTIONS"
 
 # debug
 COMMAND='echo hello | nc -lvnp 80'
-docker run kadlab /bin/sh -c $COMMAND
+docker run kadlab /bin/sh -c "$COMMAND"
