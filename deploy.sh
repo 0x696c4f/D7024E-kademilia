@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # stop running containers 
 docker kill $(docker ps -q -f ancestor=kadlab)
