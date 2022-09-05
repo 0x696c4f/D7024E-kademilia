@@ -18,4 +18,5 @@ COPY ./src/ /src
 
 # go compile
 
-ENTRYPOINT /bin/sh -c 'echo hello|nc -lvnp 80'
+# not needed anymore, replaced by start script
+#ENTRYPOINT /bin/sh -c 'echo hello|nc -lvnp 80'
