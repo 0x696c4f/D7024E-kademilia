@@ -21,4 +21,5 @@ COPY ./src/ /src
 # go compile
 CMD ["src/main"]
 
-ENTRYPOINT /bin/sh -c 'echo hello|nc -lvnp 80'
+# not needed anymore, replaced by start script
+#ENTRYPOINT /bin/sh -c 'echo hello|nc -lvnp 80'
