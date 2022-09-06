@@ -11,11 +11,14 @@ FROM debian:latest
 # "kadlab", which you do by using the following command:
 #
 # $ docker build . -t kadlab
+
 RUN apt update
 RUN apt install -yq netcat iproute2
+#RUN apt-get install iputils-ping
 
 COPY ./src/ /src
 
 # go compile
+CMD ["src/main"]
 
 ENTRYPOINT /bin/sh -c 'echo hello|nc -lvnp 80'
