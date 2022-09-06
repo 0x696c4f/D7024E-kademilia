@@ -13,13 +13,15 @@ FROM debian:latest
 # $ docker build . -t kadlab
 
 RUN apt update
-RUN apt install -yq netcat iproute2
+RUN apt install -yq apt-utils
+RUN apt upgrade -y --fix-missing
+RUN apt install -yq netcat iproute2 golang
 #RUN apt-get install iputils-ping
 
 COPY ./src/ /src
 
 # go compile
-CMD ["src/main"]
+ENTRYPOINT go run /src/main.go
 
 # not needed anymore, replaced by start script
 #ENTRYPOINT /bin/sh -c 'echo hello|nc -lvnp 80'
