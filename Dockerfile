@@ -18,10 +18,10 @@ RUN apt upgrade -y --fix-missing
 RUN apt install -yq netcat iproute2 golang
 #RUN apt-get install iputils-ping
 
+# go compile
 COPY ./src/ /src
 
-# go compile
-ENTRYPOINT go run /src/main.go
+#ENTRYPOINT go run /src/main.go
 
 # not needed anymore, replaced by start script
-#ENTRYPOINT /bin/sh -c 'echo hello|nc -lvnp 80'
+ENTRYPOINT /bin/sh -c 'echo hello|nc -lvnp 80'
