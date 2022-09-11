@@ -17,15 +17,13 @@ func TestPing() {
 	// kademlia struct created, one ID and one distance
 	//Get the correct and accurat ID TODO
 	myId := NewRandomKademliaID()
-	fmt.Println(myId)
 
 	//------------------------------
-	//Get the IP address TODO
+	//Get the IP correct address TODO
 	//------------------------------
 
 	//create a contact
-	contactFirst := NewContact(myId, "172.0.0.2") //IP address TODO
-	fmt.Println(contactFirst.ID)
+	contactFirst := NewContact(myId, "172.0.0.2 8080") //IP address TODO
 
 	//call ping message in network SendPingMessage(contact)
 	net.SendPingMessage(&contactFirst)
