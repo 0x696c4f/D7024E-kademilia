@@ -19,7 +19,6 @@ RUN apt install -yq netcat iproute2 golang
 #RUN apt-get install iputils-ping
 
 # go compile
-RUN go build -o kademlia src/main/*.go
 COPY ./src/ /src
 
 #ENTRYPOINT go run /src/main.go
