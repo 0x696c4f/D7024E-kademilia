@@ -1,6 +1,4 @@
-package D7024E
-
-import "fmt"
+package main
 
 type Network struct {
 }
@@ -9,11 +7,9 @@ func Listen(ip string, port int) {
 	// TODO
 }
 
-func testOtherFile() {
-	fmt.Println("pinging")
-}
-
 func (network *Network) SendPingMessage(contact *Contact) {
+	//have a massage which is encoded 	"message := EncodeString("Just a PING message")"
+	//send the message to the dedicated address  "go network.sendUDP("PING", contact.Address, message)"
 
 }
 
