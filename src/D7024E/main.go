@@ -6,6 +6,10 @@ import (
 
 func main() {
 	fmt.Println("start stop ")
+	TestPing()
+}
+
+func TestPing() {
 
 	//network struct create
 	net := NewNetwork()
@@ -13,21 +17,20 @@ func main() {
 	// kademlia struct created, one ID and one distance
 	//Get the correct and accurat ID TODO
 	myId := NewRandomKademliaID()
-	myId2 := NewRandomKademliaID()
 	fmt.Println(myId)
-	fmt.Println(myId2)
 
+	//------------------------------
 	//Get the IP address TODO
+	//------------------------------
 
 	//create a contact
 	contactFirst := NewContact(myId, "172.0.0.2") //IP address TODO
-
 	fmt.Println(contactFirst.ID)
 
 	//call ping message in network SendPingMessage(contact)
 	net.SendPingMessage(&contactFirst)
-}
 
+}
 func StartNetwork() {
 
 	//contact := &Contact{}
