@@ -1,7 +1,13 @@
 package main
 
 import (
+	"encoding/json"
+	"errors"
+	"time"
+
 	"fmt"
+	"net"
+	"strconv"
 )
 
 type Network struct {
@@ -19,23 +25,86 @@ func NewNetwork() *Network {
 
 func (network *Network) SendPingMessage(contact *Contact) {
 	fmt.Println("Sending ping message")
-	//have a massage which is encoded or set up in some way
 
+	message := EncryptString("Ping Message") //change string to []byte
+
+	//send the ping and read its response
+	respo, err := network.UDPConnectionHandler(contact, message)
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		fmt.Println(respo)
+	}
+}
+
+func EncryptString(str string) []byte {
+	message, _ := json.Marshal(str)
+	return message
+}
+
+func (network *Network) UDPConnectionHandler(contact *Contact, message []byte) (string, error) {
+
+	// 0------------
+	UDPaddress := GetUDPAddress(contact)
+
+	//1-------------
+	Conn, dialError := net.DialUDP("udp", nil, &UDPaddress)
+	if dialError != nil {
+		return "Connection Fail", errors.New("UDP connection Failed")
+	}
+	defer Conn.Close()
+
+	//2-------------
+	Conn.Write(message)
+
+	//3-------------
+	Conn.SetDeadline(time.Now().Add(1 * time.Millisecond)) //TODO set the time 1 to something else resonable
+
+	//4-------------
+	buffert := make([]byte, 1000)
+	_, _, readError := Conn.ReadFromUDP(buffert) // response, remoteAddr, readError //TODO handle the responce
+
+	//5-------------
+	if readError != nil {
+		return "Read Fail", errors.New("UDP read Failed")
+	}
+	//--------------
+
+	return "udp connection success", nil
 	//Send Message
 	/*
 		0: Take out the contact information from contact
-			0.1: Get UDP adress
+			0.1: Get UDP adress by etiblating an UDPAddr
+			Answer: UDPaddress := GetUDPAddress(contact)
 		1: establish connection (https://pkg.go.dev/net)
-			Answer: DialUDP(network string, laddr, raddr *UDPAddr)
-			1.1 If connection fail send error message
+			Answer: Conn, err := DialUDP(network string, laddr, raddr *UDPAddr)
+					if err != nil{
+						//return -- some problem has occured}
+			1.1 If connection fail send error message (https://go.dev/doc/tutorial/handle-errors)
 			1.2 defer closing the connection. Making sure that it closes even on errors
 		2: Write through connection
-		3: set a deadline for a respons
-			Answer: SetDeadline(t time.Time) error
-		4: If deadline expires send error message
-		5: Message was responed on, add the contact to the bucket
+			Answer: Write(b []byte)   alt:   int , err := Write(b []byte)
+		3: set a deadline for a respons (https://github.com/golang/go/issues/14490)
+			Answer: Conn.SetDeadline(time.Now().Add(time.Secound)) error
+		4: Check for the response through the UDP connection
+			Answer:	 ReadFromUDP(b []byte) (n int, addr *UDPAddr, err error)
+		5: If deadline expires send error message
+		6: Message was responed on, add the contact to the bucket
 	*/
 
+}
+
+func GetUDPAddress(contact *Contact) net.UDPAddr {
+	addr, port, _ := net.SplitHostPort(contact.Address) // "_" is a possible error message
+	IPAddr := net.ParseIP(addr)
+	intPort, _ := strconv.Atoi(port) //https://www.golangprograms.com/how-to-convert-string-to-integer-type-in-go.html
+
+	UDPaddress := net.UDPAddr{
+		IP:   IPAddr,
+		Port: intPort,
+		//Zone string // IPv6 scoped addressing zone
+	}
+	return UDPaddress
 }
 
 func (network *Network) SendFindContactMessage(contact *Contact) {
