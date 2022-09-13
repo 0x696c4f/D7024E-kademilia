@@ -20,7 +20,7 @@ type Packet struct {
 	Message        []byte
 }
 
-func Listen(ip string, port int) {
+func Listen( /*ip string, port int*/ ) {
 	// TODO
 }
 
