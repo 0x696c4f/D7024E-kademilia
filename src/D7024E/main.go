@@ -16,20 +16,20 @@ func main() {
 	net := NewNetwork()
 	net.Node = NewKademlia(localIP)
 
-	startNodeIP := GetStartNodeIP()
+	gatewayIP := GetGatewayIP()
 
-	if localIP != startNodeIP {
-		knownContact := NewContact(NewKademliaID(HashData(startNodeIP)), startNodeIP)
+	if localIP != gatewayIP {
+		knownContact := NewContact(NewKademliaID(HashData(gatewayIP)), gatewayIP)
 		JoinNetwork(&knownContact)
 	}
 	//net.TestPing(localIP)
 
-	Listen()
+	go Listen() //why we use go https://www.golang-book.com/books/intro/10
 
 }
 
-func GetStartNodeIP() (startNode string) { //TODO set up a universal first IP address ending with 0.2:8080
-	startNode = "172.17.0.2:8080"
+func GetGatewayIP() (gatewayIP string) { //TODO set up a universal first IP address ending with xxx.xxx.xxx.2:8080
+	gatewayIP = "172.17.0.2:8080"
 	return
 }
 
