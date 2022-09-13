@@ -16,21 +16,24 @@ func main() {
 	net := NewNetwork()
 	net.Node = NewKademlia(localIP)
 
-	if localIP != "172.17.0.2:8080" { //TODO set up a universal first IP address ending with 0.2:8080
-		JoinNetwork()
+	startNodeIP := GetStartNodeIP()
+
+	if localIP != startNodeIP {
+		knownContact := NewContact(NewKademliaID(HashData(startNodeIP)), startNodeIP)
+		JoinNetwork(&knownContact)
 	}
 	//net.TestPing(localIP)
 
-	/*
-		-:Check if this container is the first one in the system
-			-: If it's not the first then join the existing network through messageing the first node
-				-: Has IP Address ending with 0.2
-		-:Start a listiner
-	*/
+	Listen()
 
 }
 
-func JoinNetwork() {
+func GetStartNodeIP() (startNode string) { //TODO set up a universal first IP address ending with 0.2:8080
+	startNode = "172.17.0.2:8080"
+	return
+}
+
+func JoinNetwork(contactKnown *Contact) {
 	fmt.Println("join network")
 	//TODO
 }
