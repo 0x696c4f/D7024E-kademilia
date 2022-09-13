@@ -20,8 +20,17 @@ type Packet struct {
 	Message        []byte
 }
 
-func Listen( /*ip string, port int*/ ) {
+func (network *Network) Listen( /*ip string, port int*/ ) {
 	// TODO
+
+	//1------------------
+	UDPaddress := GetUDPAddress(&network.Node.Me)
+	Conn, listeningError := net.ListenUDP("udp", &UDPaddress)
+	if listeningError != nil {
+		return
+	}
+	//2------------------
+	defer Conn.Close()
 	/*
 		1:Open UDPPort for it to listen in on.
 			1.1:What UDP address should we listen in on

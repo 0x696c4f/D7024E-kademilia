@@ -13,8 +13,8 @@ func main() {
 	myIP := GetOutboundIP()
 	localIP := myIP.String() + ":" + port
 
-	net := NewNetwork()
-	net.Node = NewKademlia(localIP)
+	network := NewNetwork()
+	network.Node = NewKademlia(localIP)
 
 	gatewayIP := GetGatewayIP()
 
@@ -24,8 +24,11 @@ func main() {
 	}
 	//net.TestPing(localIP)
 
-	go Listen() //why we use go https://www.golang-book.com/books/intro/10
+	//correct way to call listening
+	//go network.Listen() //why we use go https://www.golang-book.com/books/intro/10
 
+	//Testing call for Listen
+	network.Listen()
 }
 
 func GetGatewayIP() (gatewayIP string) { //TODO set up a universal first IP address ending with xxx.xxx.xxx.2:8080
