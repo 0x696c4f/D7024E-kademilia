@@ -26,10 +26,8 @@ func TestPing(ip string) {
 
 	contactFirst := NewContact(NewKademliaID(HashData(TestconnectIP)), TestconnectIP) //IP address TODO
 
-	fmt.Println(contactFirst.Address)
 	//call ping message in network SendPingMessage(contact)
-	//net.SendPingMessage(&contactFirst)
-
+	net.SendPingMessage(&contactFirst)
 }
 
 // (https://stackoverflow.com/questions/23558425/how-do-i-get-the-local-ip-address-in-go)
