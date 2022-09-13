@@ -12,25 +12,39 @@ func main() {
 
 	myIP := GetOutboundIP()
 	localIP := myIP.String() + ":" + port
-	TestPing(localIP)
+
+	net := NewNetwork()
+	net.Node = NewKademlia(localIP)
+
+	if localIP != "172.17.0.2:8080" { //TODO set up a universal first IP address ending with 0.2:8080
+		JoinNetwork()
+	}
+	//net.TestPing(localIP)
+
+	/*
+		-:Check if this container is the first one in the system
+			-: If it's not the first then join the existing network through messageing the first node
+				-: Has IP Address ending with 0.2
+		-:Start a listiner
+	*/
+
 }
 
-func TestPing(ip string) {
+func JoinNetwork() {
+	fmt.Println("join network")
+	//TODO
+}
 
-	//network struct create
-	net := NewNetwork()
-	net.Node = NewKademlia(ip)
+func (net *Network) TestPing(ip string) {
 
 	//create a contact
-	TestconnectIP := "172.17.0.7:8080"
-
+	TestconnectIP := "172.17.0.3:8080"
 	contactFirst := NewContact(NewKademliaID(HashData(TestconnectIP)), TestconnectIP) //IP address TODO
 
 	//call ping message in network SendPingMessage(contact)
 	net.SendPingMessage(&contactFirst)
 }
 
-// (https://stackoverflow.com/questions/23558425/how-do-i-get-the-local-ip-address-in-go)
 func GetOutboundIP() net.IP {
 	conn, err := net.Dial("udp", "8.8.8.8:80")
 	if err != nil {
@@ -41,8 +55,4 @@ func GetOutboundIP() net.IP {
 	localAddr := conn.LocalAddr().(*net.UDPAddr)
 
 	return localAddr.IP
-}
-
-func JoinNetwork() {
-
 }
