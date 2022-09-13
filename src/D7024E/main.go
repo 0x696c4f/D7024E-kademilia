@@ -43,18 +43,6 @@ func GetOutboundIP() net.IP {
 	return localAddr.IP
 }
 
-func StartNetwork() {
-
-	//contact := &Contact{}
-	//contact.ID =
-
-	//When starting the network connection, have the ip and the port of one node
-
-	//get the id from the known node
-	//store that Id in the bucket
-
-}
-
 func JoinNetwork() {
 
 }
