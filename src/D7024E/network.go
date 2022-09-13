@@ -20,6 +20,19 @@ type Packet struct {
 	Message        []byte
 }
 
+/*
+	1:Open UDPPort for it to listen in on.
+		1.1:What UDP address should we listen in on
+	2:Close the connection
+		answer: defer connection.Close()
+	3:Create for loop to handle the inputs
+	4:Read the input
+	5:convert into unmarshaldata
+	6:add contact to the bucket
+	7:handle inquary
+	8:Unmarhal data
+	9:send back respons
+*/
 func (network *Network) Listen( /*ip string, port int*/ ) {
 	// TODO
 
@@ -31,19 +44,25 @@ func (network *Network) Listen( /*ip string, port int*/ ) {
 	}
 	//2------------------
 	defer Conn.Close()
-	/*
-		1:Open UDPPort for it to listen in on.
-			1.1:What UDP address should we listen in on
-		2:Close the connection
-			answer: defer connection.Close()
-		3:Create for loop to handle the inputs
-		4:Read the input
-		5:convert into unmarshaldata
-		6:add contact to the bucket
-		7:handle inquary
-		8:Unmarhal data
-		9:send back respons
-	*/
+	//3------------------
+	for {
+		//4-------------------
+		buffert := make([]byte, 1000)
+		step, readAddress, _ := Conn.ReadFromUDP(buffert)
+		//5-------------------
+		message := ByteToPacket(buffert[0:step])
+		//6-------------------
+		//TODO add contact to bucket
+		//7-------------------
+		response := MessageHandler(message)
+		//8-------------------
+		responsMarshal := PacketToByte(response)
+		//9-------------------
+		_, respondError := Conn.WriteToUDP([]byte(responsMarshal), readAddress)
+		if respondError != nil {
+			fmt.Println(respondError)
+		}
+	}
 }
 
 func NewNetwork() *Network {
@@ -97,35 +116,33 @@ func (network *Network) SendPingMessage(contact *Contact) {
 func (network *Network) UDPConnectionHandler(contact *Contact, msgPacket Packet) (Packet, error) {
 
 	UDPaddress := GetUDPAddress(contact)
-	msgMarshal := PacketToByte(msgPacket) //convert Packet to []byte
-
+	msgMarshal := PacketToByte(msgPacket)
 	//1-------------
 	Conn, dialError := net.DialUDP("udp", nil, &UDPaddress)
 	if dialError != nil {
 		return Packet{}, dialError
 	}
 	defer Conn.Close()
-
 	//2-------------
-	Conn.Write(msgMarshal)
-
+	Conn.Write([]byte(msgMarshal)) //TODO check if write is correct, could be WriteToUDP
 	//3-------------
-	Conn.SetDeadline(time.Now().Add(100 * time.Millisecond)) //TODO set the time 1 to something else resonable
-
+	Conn.SetDeadline(time.Now().Add(100 * time.Millisecond))
 	//4-------------
 	buffert := make([]byte, 1000)
-	step, _, readError := Conn.ReadFromUDP(buffert) // response, remoteAddr, readError //TODO handle the responce
-
+	step, _, readError := Conn.ReadFromUDP(buffert)
 	//5-------------
 	response := ByteToPacket(buffert[0:step])
-
 	//6-------------
 	if readError != nil {
 		return Packet{}, readError
 	}
-
 	return response, nil
 
+}
+
+func MessageHandler(message Packet) Packet { //TODO
+	response := message
+	return response
 }
 
 func (network *Network) SendFindContactMessage(contact *Contact) {
