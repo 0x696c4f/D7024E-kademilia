@@ -22,6 +22,19 @@ type Packet struct {
 
 func Listen( /*ip string, port int*/ ) {
 	// TODO
+	/*
+		1:Open UDPPort for it to listen in on.
+			1.1:What UDP address should we listen in on
+		2:Close the connection
+			answer: defer connection.Close()
+		3:Create for loop to handle the inputs
+		4:Read the input
+		5:convert into unmarshaldata
+		6:add contact to the bucket
+		7:handle inquary
+		8:Unmarhal data
+		9:send back respons
+	*/
 }
 
 func NewNetwork() *Network {
