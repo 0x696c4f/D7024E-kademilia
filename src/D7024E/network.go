@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
 	"time"
 
 	"fmt"
@@ -75,15 +74,13 @@ func (network *Network) SendPingMessage(contact *Contact) {
 */
 func (network *Network) UDPConnectionHandler(contact *Contact, msgPacket Packet) (Packet, error) {
 
-	// 0------------
 	UDPaddress := GetUDPAddress(contact)
-
-	msgMarshal := PacketToByte(msgPacket)
+	msgMarshal := PacketToByte(msgPacket) //convert Packet to []byte
 
 	//1-------------
 	Conn, dialError := net.DialUDP("udp", nil, &UDPaddress)
 	if dialError != nil {
-		return Packet{}, errors.New("UDP connection Failed")
+		return Packet{}, dialError
 	}
 	defer Conn.Close()
 
@@ -102,9 +99,8 @@ func (network *Network) UDPConnectionHandler(contact *Contact, msgPacket Packet)
 
 	//6-------------
 	if readError != nil {
-		return Packet{}, errors.New("UDP read Failed")
+		return Packet{}, readError
 	}
-	//--------------
 
 	return response, nil
 
