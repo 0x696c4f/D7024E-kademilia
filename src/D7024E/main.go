@@ -22,13 +22,13 @@ func main() {
 		knownContact := NewContact(NewKademliaID(HashData(gatewayIP)), gatewayIP)
 		JoinNetwork(&knownContact)
 	}
-	//net.TestPing(localIP)
+	network.TestPing()
 
 	//correct way to call listening
 	//go network.Listen() //why we use go https://www.golang-book.com/books/intro/10
 
 	//Testing call for Listen
-	network.Listen()
+	//network.Listen()
 }
 
 func GetGatewayIP() (gatewayIP string) { //TODO set up a universal first IP address ending with xxx.xxx.xxx.2:8080
@@ -36,19 +36,14 @@ func GetGatewayIP() (gatewayIP string) { //TODO set up a universal first IP addr
 	return
 }
 
-func JoinNetwork(contactKnown *Contact) {
-	fmt.Println("join network")
-	//TODO
-}
-
-func (net *Network) TestPing(ip string) {
+func (network *Network) TestPing() {
 
 	//create a contact
 	TestconnectIP := "172.17.0.3:8080"
 	contactFirst := NewContact(NewKademliaID(HashData(TestconnectIP)), TestconnectIP) //IP address TODO
 
 	//call ping message in network SendPingMessage(contact)
-	net.SendPingMessage(&contactFirst)
+	network.SendPingMessage(&contactFirst)
 }
 
 func GetOutboundIP() net.IP {
