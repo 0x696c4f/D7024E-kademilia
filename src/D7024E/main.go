@@ -13,36 +13,37 @@ func main() {
 	myIP := GetOutboundIP()
 	localIP := myIP.String() + ":" + port
 
-	net := NewNetwork()
-	net.Node = NewKademlia(localIP)
+	network := NewNetwork()
+	network.Node = NewKademlia(localIP)
 
-	if localIP != "172.17.0.2:8080" { //TODO set up a universal first IP address ending with 0.2:8080
-		JoinNetwork()
+	gatewayIP := GetGatewayIP()
+
+	if localIP != gatewayIP {
+		knownContact := NewContact(NewKademliaID(HashData(gatewayIP)), gatewayIP)
+		JoinNetwork(&knownContact)
 	}
-	//net.TestPing(localIP)
+	network.TestPing()
 
-	/*
-		-:Check if this container is the first one in the system
-			-: If it's not the first then join the existing network through messageing the first node
-				-: Has IP Address ending with 0.2
-		-:Start a listiner
-	*/
+	//correct way to call listening
+	//go network.Listen() //why we use go https://www.golang-book.com/books/intro/10
 
+	//Testing call for Listen
+	//network.Listen()
 }
 
-func JoinNetwork() {
-	fmt.Println("join network")
-	//TODO
+func GetGatewayIP() (gatewayIP string) { //TODO set up a universal first IP address ending with xxx.xxx.xxx.2:8080
+	gatewayIP = "172.17.0.2:8080"
+	return
 }
 
-func (net *Network) TestPing(ip string) {
+func (network *Network) TestPing() {
 
 	//create a contact
 	TestconnectIP := "172.17.0.3:8080"
 	contactFirst := NewContact(NewKademliaID(HashData(TestconnectIP)), TestconnectIP) //IP address TODO
 
 	//call ping message in network SendPingMessage(contact)
-	net.SendPingMessage(&contactFirst)
+	network.SendPingMessage(&contactFirst)
 }
 
 func GetOutboundIP() net.IP {
