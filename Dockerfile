@@ -28,4 +28,4 @@ RUN go install
 #ENTRYPOINT go run /src/main.go
 
 # not needed anymore, replaced by start script
-ENTRYPOINT /bin/sh -c 'echo hello|nc -lvnp 80'
+#ENTRYPOINT /bin/sh -c 'echo hello|nc -lvnp 80'

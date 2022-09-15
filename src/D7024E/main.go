@@ -55,6 +55,8 @@ func main() {
 					printHelpExit("Invalid port.")
 				}
 			}
+			network.TestPing(ip)
+
 			gatewayIP := IpPortSerialize(ip,remoteport)
 			fmt.Println("joining via",ip,":",remoteport)
 			knownContact := NewContact(NewKademliaID(HashData(gatewayIP)), gatewayIP)
@@ -72,7 +74,6 @@ func main() {
 			printHelpExit("Invalid command.")
 	}
 
-	network.TestPing()
 
 	//correct way to call listening
 	//go network.Listen() //why we use go https://www.golang-book.com/books/intro/10
@@ -81,10 +82,10 @@ func main() {
 	network.Listen()
 }
 
-func (network *Network) TestPing() {
+func (network *Network) TestPing(ip net.IP) {
 
 	//create a contact
-	TestconnectIP := "172.17.0.4:8080"
+	TestconnectIP := ip.String()+":8080"
 	contactFirst := NewContact(NewKademliaID(HashData(TestconnectIP)), TestconnectIP) //IP address TODO
 
 	//call ping message in network SendPingMessage(contact)
