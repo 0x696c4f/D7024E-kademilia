@@ -7,7 +7,7 @@ import (
 )
 
 type Network struct {
-	Node Kademlia
+	node Kademlia
 }
 
 type Packet struct {
@@ -33,7 +33,7 @@ type Packet struct {
 func (network *Network) Listen( /*ip string, port int*/ ) {
 	// TODO
 	//1------------------
-	UDPaddress := GetUDPAddress(&network.Node.Me)
+	UDPaddress := GetUDPAddress(&network.node.routingTable.me)
 	Conn, listeningError := net.ListenUDP("udp", &UDPaddress)
 
 	if listeningError != nil {
@@ -71,15 +71,16 @@ func (network *Network) NewPacket(version string) (pack Packet) {
 		pack = Packet{
 			RPC:            "ping",
 			ID:             NewRandomKademliaID(),
-			SendingContact: &network.Node.Me,
+			SendingContact: &network.node.routingTable.me,
 		}
 	}
 	return
 }
 
-func NewNetwork() *Network {
-	net := &Network{}
-	return net
+func NewNetwork(localIP string) *Network {
+	network := &Network{}
+	network.node = NewKademlia(localIP)
+	return network
 }
 
 func JoinNetwork(contactKnown *Contact) {

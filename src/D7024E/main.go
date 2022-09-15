@@ -13,8 +13,7 @@ func main() {
 	myIP := GetOutboundIP()
 	localIP := myIP.String() + ":" + port
 
-	network := NewNetwork()
-	network.Node = NewKademlia(localIP)
+	network := NewNetwork(localIP)
 
 	gatewayIP := GetGatewayIP()
 
