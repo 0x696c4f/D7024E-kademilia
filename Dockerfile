@@ -19,7 +19,11 @@ RUN apt install -yq netcat iproute2 golang
 #RUN apt-get install iputils-ping
 
 # go compile
-COPY ./src/ /src
+COPY . /kademlia
+ENV GOPATH=/kademlia/
+ENV GO111MODULE=off
+WORKDIR /kademlia/src/D7024E
+RUN go install
 
 #ENTRYPOINT go run /src/main.go
 

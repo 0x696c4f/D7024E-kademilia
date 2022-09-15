@@ -1,7 +1,7 @@
 #!/bin/sh
 
 PORT=4000
-COMMAND="./kademlia"
+COMMAND="/kademlia/bin/D7024E"
 OPTIONS=""
 
 if [ $(docker ps -q -f ancestor=kadlab|wc -l) -eq 0 ]

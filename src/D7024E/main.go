@@ -28,13 +28,13 @@ func main() {
 	//go network.Listen() //why we use go https://www.golang-book.com/books/intro/10
 
 	//Testing call for Listen
-	//network.Listen()
+	network.Listen()
 }
 
 func (network *Network) TestPing() {
 
 	//create a contact
-	TestconnectIP := "172.17.0.3:8080"
+	TestconnectIP := "172.17.0.4:8080"
 	contactFirst := NewContact(NewKademliaID(HashData(TestconnectIP)), TestconnectIP) //IP address TODO
 
 	//call ping message in network SendPingMessage(contact)
