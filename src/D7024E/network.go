@@ -123,6 +123,7 @@ func (network *Network) UDPConnectionHandler(contact *Contact, msgPacket Packet)
 	step, _, readError := Conn.ReadFromUDP(buffert)
 	//5-------------
 	response := ByteToPacket(buffert[0:step])
+	fmt.Println(response.RPC)
 	//6-------------
 	if readError != nil {
 		return Packet{}, readError

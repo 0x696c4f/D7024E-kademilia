@@ -28,7 +28,7 @@ func main() {
 	//go network.Listen() //why we use go https://www.golang-book.com/books/intro/10
 
 	//Testing call for Listen
-	//network.Listen()
+	network.Listen()
 }
 
 func GetGatewayIP() (gatewayIP string) { //TODO set up a universal first IP address ending with xxx.xxx.xxx.2:8080
@@ -39,7 +39,7 @@ func GetGatewayIP() (gatewayIP string) { //TODO set up a universal first IP addr
 func (network *Network) TestPing() {
 
 	//create a contact
-	TestconnectIP := "172.17.0.3:8080"
+	TestconnectIP := "172.17.0.4:8080"
 	contactFirst := NewContact(NewKademliaID(HashData(TestconnectIP)), TestconnectIP) //IP address TODO
 
 	//call ping message in network SendPingMessage(contact)
