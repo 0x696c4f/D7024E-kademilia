@@ -51,7 +51,7 @@ func (network *Network) Listen( /*ip string, port int*/ ) {
 		message := ByteToPacket(buffert[0:step])
 		fmt.Println("recived: ", message.RPC)
 		//6-------------------
-		network.node.routingTable.AddContact(message.SendingContact)
+		network.AddToRoudingTable(message.SendingContact)
 		//7-------------------
 		response := network.MessageHandler(&message)
 		//8-------------------
