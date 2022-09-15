@@ -1,5 +1,7 @@
 package main
 
 func (network *Network) ResponseHandler(response *Packet) {
-	//TODO
+	if response == "ping" {
+		AddToRoudingTable(response.SendingContact)
+	}
 }

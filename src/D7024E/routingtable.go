@@ -67,3 +67,18 @@ func (routingTable *RoutingTable) getBucketIndex(id *KademliaID) int {
 
 	return IDLength*8 - 1
 }
+
+func (network *Network) AddToRoudingTable(contact *Contact) {
+
+	//TODO
+	/*
+		Check if the contact exist
+		- if it exist nothing is done
+		- If it doesn't exist, then check if the bucket is full
+			- if it is not full add to the bucket
+			- if it is full, check if the head is resonding with ping
+				-if yes then move it to the tail and ignore the new contact
+				-if no delete it and add the new contact to tail
+	*/
+
+}
