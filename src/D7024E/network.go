@@ -11,7 +11,7 @@ type Network struct {
 }
 
 type Packet struct {
-	RPC            string
+	form           string
 	ID             *KademliaID
 	SendingContact Contact
 	Message        []byte
@@ -47,14 +47,13 @@ func (network *Network) Listen( /*ip string, port int*/ ) {
 		buffert := make([]byte, 1000)
 		fmt.Println("Listening")
 		step, readAddress, _ := Conn.ReadFromUDP(buffert)
-		fmt.Println("----got the message ---")
 		//5-------------------
 		message := ByteToPacket(buffert[0:step])
-		fmt.Println(message.RPC)
+		fmt.Println("message from ID  ", message.ID)
 		//6-------------------
 		network.node.routingTable.AddContact(message.SendingContact)
 		//7-------------------
-		response := MessageHandler(message)
+		response := network.MessageHandler(&message)
 		//8-------------------
 		responsMarshal := PacketToByte(response)
 		//9-------------------
@@ -68,8 +67,8 @@ func (network *Network) Listen( /*ip string, port int*/ ) {
 func (network *Network) NewPacket(version string) (pack Packet) {
 	if version == "ping" {
 		pack = Packet{
-			RPC:            "ping",
-			ID:             network.node.routingTable.me.ID,
+			form:           "ping",
+			ID:             NewRandomKademliaID(),
 			SendingContact: network.node.routingTable.me,
 		}
 	}
@@ -90,13 +89,15 @@ func JoinNetwork(contactKnown *Contact) {
 func (network *Network) SendPingMessage(contact *Contact) {
 	fmt.Println("Sending ping message")
 
-	_, err := network.UDPConnectionHandler(contact, network.NewPacket("ping")) //TODO handle the output packet
+	response, err := network.UDPConnectionHandler(contact, network.NewPacket("ping")) //TODO handle the output packet
+	network.MessageHandler(&response)
 	if err != nil {
 		fmt.Println("------------Error-------------")
 		fmt.Println(err)
 		fmt.Println("------------------------------")
 	} else {
 		fmt.Println("Success")
+		network.ResponseHandler(&response)
 	}
 }
 
@@ -121,18 +122,13 @@ func (network *Network) UDPConnectionHandler(contact *Contact, msgPacket Packet)
 	step, _, readError := Conn.ReadFromUDP(buffert)
 	//5-------------
 	response := ByteToPacket(buffert[0:step])
-	fmt.Println(response.RPC)
+	fmt.Println(response.form)
 	//6-------------
 	if readError != nil {
 		return Packet{}, readError
 	}
 	return response, nil
 
-}
-
-func MessageHandler(message Packet) Packet { //TODO
-	response := message
-	return response
 }
 
 func (network *Network) SendFindContactMessage(contact *Contact) {
