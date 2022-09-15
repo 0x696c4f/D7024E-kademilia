@@ -13,7 +13,7 @@ type Network struct {
 type Packet struct {
 	RPC            string
 	ID             *KademliaID
-	SendingContact *Contact
+	SendingContact Contact
 	Message        []byte
 }
 
@@ -51,9 +51,8 @@ func (network *Network) Listen( /*ip string, port int*/ ) {
 		//5-------------------
 		message := ByteToPacket(buffert[0:step])
 		fmt.Println(message.RPC)
-
 		//6-------------------
-		//TODO add contact to bucket
+		network.node.routingTable.AddContact(message.SendingContact)
 		//7-------------------
 		response := MessageHandler(message)
 		//8-------------------
@@ -70,8 +69,8 @@ func (network *Network) NewPacket(version string) (pack Packet) {
 	if version == "ping" {
 		pack = Packet{
 			RPC:            "ping",
-			ID:             NewRandomKademliaID(),
-			SendingContact: &network.node.routingTable.me,
+			ID:             network.node.routingTable.me.ID,
+			SendingContact: network.node.routingTable.me,
 		}
 	}
 	return
