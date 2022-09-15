@@ -23,6 +23,7 @@ COPY . /kademlia
 ENV GOPATH=/kademlia/
 ENV GO111MODULE=off
 WORKDIR /kademlia/src/D7024E
+RUN go get -u github.com/gin-gonic/gin
 RUN go install
 
 #ENTRYPOINT go run /src/main.go
