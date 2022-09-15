@@ -86,7 +86,7 @@ func (network *Network) TestPing(ip net.IP) {
 	//create a contact
 	TestconnectIP := ip.String()+":8080"
 	contactFirst := NewContact(NewKademliaID(HashData(TestconnectIP)), TestconnectIP) //IP address TODO
-
+	fmt.Println(contactFirst.ID)
 	//call ping message in network SendPingMessage(contact)
 	network.SendPingMessage(&contactFirst)
 }
