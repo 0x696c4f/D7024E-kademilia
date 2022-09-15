@@ -11,7 +11,7 @@ type Network struct {
 }
 
 type Packet struct {
-	form           string
+	RPC            string
 	ID             *KademliaID
 	SendingContact Contact
 	Message        []byte
@@ -49,12 +49,13 @@ func (network *Network) Listen( /*ip string, port int*/ ) {
 		step, readAddress, _ := Conn.ReadFromUDP(buffert)
 		//5-------------------
 		message := ByteToPacket(buffert[0:step])
-		fmt.Println("message from ID  ", message.ID)
+		fmt.Println("recived: ", message.RPC)
 		//6-------------------
 		network.node.routingTable.AddContact(message.SendingContact)
 		//7-------------------
 		response := network.MessageHandler(&message)
 		//8-------------------
+		fmt.Println("Listner: ", response.SendingContact.ID)
 		responsMarshal := PacketToByte(response)
 		//9-------------------
 		_, respondError := Conn.WriteToUDP([]byte(responsMarshal), readAddress)
@@ -67,7 +68,7 @@ func (network *Network) Listen( /*ip string, port int*/ ) {
 func (network *Network) NewPacket(version string) (pack Packet) {
 	if version == "ping" {
 		pack = Packet{
-			form:           "ping",
+			RPC:            "ping",
 			ID:             NewRandomKademliaID(),
 			SendingContact: network.node.routingTable.me,
 		}
@@ -90,19 +91,20 @@ func (network *Network) SendPingMessage(contact *Contact) {
 	fmt.Println("Sending ping message")
 
 	response, err := network.UDPConnectionHandler(contact, network.NewPacket("ping")) //TODO handle the output packet
-	network.MessageHandler(&response)
+
 	if err != nil {
 		fmt.Println("------------Error-------------")
 		fmt.Println(err)
 		fmt.Println("------------------------------")
 	} else {
+		fmt.Println(response.RPC)
+		fmt.Println("Messenger got a responce from: ", response.SendingContact.ID)
 		fmt.Println("Success")
 		network.ResponseHandler(&response)
 	}
 }
 
 func (network *Network) UDPConnectionHandler(contact *Contact, msgPacket Packet) (Packet, error) {
-
 	UDPaddress := GetUDPAddress(contact)
 	msgMarshal := PacketToByte(msgPacket)
 	//1-------------
@@ -122,7 +124,6 @@ func (network *Network) UDPConnectionHandler(contact *Contact, msgPacket Packet)
 	step, _, readError := Conn.ReadFromUDP(buffert)
 	//5-------------
 	response := ByteToPacket(buffert[0:step])
-	fmt.Println(response.form)
 	//6-------------
 	if readError != nil {
 		return Packet{}, readError
