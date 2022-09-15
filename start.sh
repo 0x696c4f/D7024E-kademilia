@@ -19,5 +19,5 @@ fi
 COMMAND="$COMMAND $OPTIONS"
 
 # debug
-COMMAND='echo hello | nc -lvnp 80'
+#COMMAND='echo hello | nc -lvnp 80'
 docker run -d kadlab /bin/sh -c "$COMMAND"
