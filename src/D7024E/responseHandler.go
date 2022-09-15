@@ -1,7 +1,7 @@
 package main
 
 func (network *Network) ResponseHandler(response *Packet) {
-	if response == "ping" {
-		AddToRoudingTable(response.SendingContact)
+	if response.RPC == "ping" {
+		network.AddToRoudingTable(&response.SendingContact)
 	}
 }
