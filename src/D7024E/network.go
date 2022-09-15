@@ -1,10 +1,9 @@
 package main
 
 import (
-	"time"
-
 	"fmt"
 	"net"
+	"time"
 )
 
 type Network struct {
@@ -75,7 +74,6 @@ func (network *Network) NewPacket(version string) (pack Packet) {
 			SendingContact: &network.Node.Me,
 		}
 	}
-
 	return
 }
 
@@ -123,6 +121,7 @@ func (network *Network) UDPConnectionHandler(contact *Contact, msgPacket Packet)
 	step, _, readError := Conn.ReadFromUDP(buffert)
 	//5-------------
 	response := ByteToPacket(buffert[0:step])
+	fmt.Println(response.RPC)
 	//6-------------
 	if readError != nil {
 		return Packet{}, readError
