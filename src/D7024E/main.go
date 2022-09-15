@@ -23,8 +23,7 @@ func main() {
 	myIP := GetOutboundIP()
 	localIP := IpPortSerialize(myIP,port)
 
-	network := NewNetwork()
-	network.Node = NewKademlia(localIP)
+	network := NewNetwork(localIP)
 
 	switch os.Args[1] {
 		case "start" : {
