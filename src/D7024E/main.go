@@ -31,11 +31,6 @@ func main() {
 	//network.Listen()
 }
 
-func GetGatewayIP() (gatewayIP string) { //TODO set up a universal first IP address ending with xxx.xxx.xxx.2:8080
-	gatewayIP = "172.17.0.2:8080"
-	return
-}
-
 func (network *Network) TestPing() {
 
 	//create a contact
@@ -56,4 +51,9 @@ func GetOutboundIP() net.IP {
 	localAddr := conn.LocalAddr().(*net.UDPAddr)
 
 	return localAddr.IP
+}
+
+func GetGatewayIP() (gatewayIP string) { //TODO set up a universal first IP address ending with xxx.xxx.xxx.2:8080
+	gatewayIP = "172.17.0.2:8080"
+	return
 }

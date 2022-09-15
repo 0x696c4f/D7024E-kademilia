@@ -1,10 +1,9 @@
 package main
 
 import (
-	"time"
-
 	"fmt"
 	"net"
+	"time"
 )
 
 type Network struct {
@@ -75,7 +74,6 @@ func (network *Network) NewPacket(version string) (pack Packet) {
 			SendingContact: &network.Node.Me,
 		}
 	}
-
 	return
 }
 
