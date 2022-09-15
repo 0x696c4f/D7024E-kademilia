@@ -18,7 +18,14 @@ func main() {
 	if len(os.Args) < 2 {
 		printHelpExit("No command supplied.")
 	}
-	port := 4000
+
+	port := 8080
+	myIP := GetOutboundIP()
+	localIP := IpPortSerialize(myIP,port)
+
+	network := NewNetwork()
+	network.Node = NewKademlia(localIP)
+
 	switch os.Args[1] {
 		case "start" : {
 			// start the network
@@ -32,6 +39,7 @@ func main() {
 			fmt.Println("starting network on port",port)
 		}
 		case "join" : {
+			remoteport := port
 			if len(os.Args) < 3 {
 				printHelpExit("No entrypoint given.")
 			}
@@ -42,12 +50,15 @@ func main() {
 			}
 			if len(os.Args) >= 4 {
 				var err error 
-				port,err = strconv.Atoi(os.Args[3])
+				remoteport,err = strconv.Atoi(os.Args[3])
 				if err != nil {
 					printHelpExit("Invalid port.")
 				}
 			}
-			fmt.Println("joining via",ip,":",port)
+			gatewayIP := IpPortSerialize(ip,remoteport)
+			fmt.Println("joining via",ip,":",remoteport)
+			knownContact := NewContact(NewKademliaID(HashData(gatewayIP)), gatewayIP)
+			JoinNetwork(&knownContact)
 		}
 		case "get" : {
 			hash := os.Args[2]
@@ -61,20 +72,6 @@ func main() {
 			printHelpExit("Invalid command.")
 	}
 
-	fmt.Println("start")
-
-	myIP := GetOutboundIP()
-	localIP := myIP.String() + ":" + port
-
-	network := NewNetwork()
-	network.Node = NewKademlia(localIP)
-
-	gatewayIP := GetGatewayIP()
-
-	if localIP != gatewayIP {
-		knownContact := NewContact(NewKademliaID(HashData(gatewayIP)), gatewayIP)
-		JoinNetwork(&knownContact)
-	}
 	network.TestPing()
 
 	//correct way to call listening
@@ -109,4 +106,9 @@ func GetOutboundIP() net.IP {
 func GetGatewayIP() (gatewayIP string) { //TODO set up a universal first IP address ending with xxx.xxx.xxx.2:8080
 	gatewayIP = "172.17.0.2:8080"
 	return
+}
+
+func IpPortSerialize(myIP net.IP,port int) string {
+	localIP := myIP.String() + ":" + strconv.Itoa(port)
+	return localIP
 }
