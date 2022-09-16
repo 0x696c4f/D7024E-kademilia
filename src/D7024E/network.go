@@ -55,7 +55,6 @@ func (network *Network) Listen( /*ip string, port int*/ ) {
 		//7-------------------
 		response := network.MessageHandler(&message)
 		//8-------------------
-		fmt.Println("Listner: ", response.SendingContact.ID)
 		responsMarshal := PacketToByte(response)
 		//9-------------------
 		_, respondError := Conn.WriteToUDP([]byte(responsMarshal), readAddress)

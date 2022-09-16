@@ -2,7 +2,6 @@ package main
 
 import (
 	"container/list"
-	"fmt"
 )
 
 const bucketSize = 20
@@ -89,14 +88,13 @@ func (routingTable *RoutingTable) getBucketIndex(id *KademliaID) int {
 }
 
 func (network *Network) AddToRoutingTable(contact Contact) {
-
 	//I take this as we go into the right bucket
 	bucketIndex := network.node.routingTable.getBucketIndex(contact.ID)
 	bucket := network.node.routingTable.buckets[bucketIndex].list
 
 	var element *list.Element
 	for item := bucket.Front(); item != nil; item = item.Next() { //check if contact is within the bucket
-		if contact.ID == item.Value.(Contact).ID {
+		if contact.ID.Equals(item.Value.(Contact).ID) {
 			element = item
 		}
 	}
@@ -104,8 +102,6 @@ func (network *Network) AddToRoutingTable(contact Contact) {
 	if element != nil { //the element is already in the bucket
 
 		bucket.MoveToFront(element)
-		fmt.Println("length 2: ", bucket.Len())
-		fmt.Println("TODO move to the front")
 
 	} else if element == nil && bucket.Len() < bucketSize { //not in bucket and the bucket is not full
 		network.node.routingTable.AddContact(contact)
