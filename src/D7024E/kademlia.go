@@ -7,13 +7,13 @@ import (
 
 //This Kademlia node
 type Kademlia struct {
-	Me Contact //my own information
-	//routingTable *RoutingTable //Everyone else infromation
+	routingTable *RoutingTable //Everyone else infromation
 }
 
 func NewKademlia(ipAddress string) (node Kademlia) {
 	ID := NewKademliaID(HashData(ipAddress))
-	node.Me = NewContact(ID, ipAddress)
+	node.routingTable = NewRoutingTable(NewContact(ID, ipAddress))
+
 	return
 }
 
