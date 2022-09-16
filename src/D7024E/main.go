@@ -15,77 +15,84 @@ func printHelpExit(msg string) {
 }
 
 func main() {
-	/*if len(os.Args) < 2 {
+	if len(os.Args) < 2 {
 		printHelpExit("No command supplied.")
-	}*/
+	}
 
 	port := 8080
 	myIP := GetOutboundIP()
 	localIP := IpPortSerialize(myIP, port)
 
 	network := NewNetwork(localIP)
-	/*
-		switch os.Args[1] {
-		case "start":
-			{
-				// start the network
-				if len(os.Args) >= 3 {
-					var err error
-					port, err = strconv.Atoi(os.Args[2])
-					if err != nil {
-						printHelpExit("Invalid port.")
-					}
+
+	switch os.Args[1] {
+	case "start":
+		{
+			// start the network
+			if len(os.Args) >= 3 {
+				var err error
+				port, err = strconv.Atoi(os.Args[2])
+				if err != nil {
+					printHelpExit("Invalid port.")
 				}
-				fmt.Println("starting network on port", port)
 			}
-		case "join":
-			{
-				remoteport := port
-				if len(os.Args) < 3 {
-					printHelpExit("No entrypoint given.")
+			fmt.Println("starting network on port", port)
+		}
+	case "join":
+		{
+			remoteport := port
+			if len(os.Args) < 3 {
+				printHelpExit("No entrypoint given.")
+			}
+			ipStr := os.Args[2]
+			ip := net.ParseIP(ipStr)
+			if ip == nil {
+				printHelpExit("Invalid IP")
+			}
+			if len(os.Args) >= 4 {
+				var err error
+				remoteport, err = strconv.Atoi(os.Args[3])
+				if err != nil {
+					printHelpExit("Invalid port.")
 				}
-				ipStr := os.Args[2]
-				ip := net.ParseIP(ipStr)
-				if ip == nil {
-					printHelpExit("Invalid IP")
-				}
-				if len(os.Args) >= 4 {
-					var err error
-					remoteport, err = strconv.Atoi(os.Args[3])
-					if err != nil {
-						printHelpExit("Invalid port.")
-					}
-				}
+			}
+			network.TestPing(ip)
+
+			gatewayIP := IpPortSerialize(ip, remoteport)
+			fmt.Println("joining via", ip, ":", remoteport)
+			knownContact := NewContact(NewKademliaID(HashData(gatewayIP)), gatewayIP)
+			JoinNetwork(&knownContact)
+		}
+	case "get":
+		{
+			hash := os.Args[2]
+			fmt.Println("getting ", hash)
+		}
+	case "put":
+		{
+			data := os.Args[2]
+			fmt.Println("storing ", data)
+		}
+	case "test":
+		{
+			fmt.Println("testing 2.3")
+			fmt.Println("My ID ", network.node.routingTable.me.ID)
+			//pack := network.NewPacket("ping")
+			//network.ResponseHandler(&pack)
+
+			//network.PopulateRoutingTable()
+			//network.TestRoutingTable()
+			ip := net.ParseIP("172.17.0.2")
+			for n := 0; n < 4; n++ {
 				network.TestPing(ip)
+			}
+			//correct way to call listening
+			//go network.Listen() //why we use go https://www.golang-book.com/books/intro/10
 
-				gatewayIP := IpPortSerialize(ip, remoteport)
-				fmt.Println("joining via", ip, ":", remoteport)
-				knownContact := NewContact(NewKademliaID(HashData(gatewayIP)), gatewayIP)
-				JoinNetwork(&knownContact)
-			}
-		case "get":
-			{
-				hash := os.Args[2]
-				fmt.Println("getting ", hash)
-			}
-		case "put":
-			{
-				data := os.Args[2]
-				fmt.Println("storing ", data)
-			}
-		default:
-			printHelpExit("Invalid command.")
-		}*/
-	fmt.Println("My ID ", network.node.routingTable.me.ID)
-
-	//network.PopulateRoutingTable()
-	//network.TestRoutingTable()
-	ip := net.ParseIP("172.17.0.4")
-	for n := 0; n < 4; n++ {
-		network.TestPing(ip)
+		}
+	default:
+		printHelpExit("Invalid command.")
 	}
-	//correct way to call listening
-	//go network.Listen() //why we use go https://www.golang-book.com/books/intro/10
 
 	//Testing call for Listen
 	network.Listen()
