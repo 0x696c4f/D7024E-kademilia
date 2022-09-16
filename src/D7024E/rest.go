@@ -1,5 +1,6 @@
 package main
 
+/*
 import (
 	"net/http"
 
@@ -44,3 +45,4 @@ func RestApi() {
 
 	router.Run("localhost:8080")
 }
+*/
