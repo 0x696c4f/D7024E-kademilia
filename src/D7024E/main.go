@@ -21,15 +21,18 @@ func main() {
 		knownContact := NewContact(NewKademliaID(HashData(gatewayIP)), gatewayIP)
 		JoinNetwork(&knownContact)
 	}
+	fmt.Println("My ID ", network.node.routingTable.me.ID)
 
-	network.PopulateRoutingTable()
-	//network.TestPing()
-
+	//network.PopulateRoutingTable()
+	//network.TestRoutingTable()
+	for n := 0; n < 4; n++ {
+		network.TestPing()
+	}
 	//correct way to call listening
 	//go network.Listen() //why we use go https://www.golang-book.com/books/intro/10
 
 	//Testing call for Listen
-	//network.Listen()
+	network.Listen()
 
 }
 
