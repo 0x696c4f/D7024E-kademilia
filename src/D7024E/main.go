@@ -21,13 +21,34 @@ func main() {
 		knownContact := NewContact(NewKademliaID(HashData(gatewayIP)), gatewayIP)
 		JoinNetwork(&knownContact)
 	}
-	network.TestPing()
+
+	network.PopulateRoutingTable()
+	//network.TestPing()
 
 	//correct way to call listening
 	//go network.Listen() //why we use go https://www.golang-book.com/books/intro/10
 
 	//Testing call for Listen
-	network.Listen()
+	//network.Listen()
+
+}
+
+func (network *Network) TestRoutingTable() {
+	TestconnectIP2 := "172.17.0.5:8080"
+	testContact := NewContact(NewKademliaID(HashData(TestconnectIP2)), TestconnectIP2) //IP address TODO
+
+	//network.node.routingTable.AddContact(testContact)
+
+	network.AddToRoutingTable(testContact)
+}
+
+func (network *Network) PopulateRoutingTable() {
+
+	for n := 0; n < 20; n++ {
+
+		TestconnectIP := "172.17.0.4:8080"
+		network.node.routingTable.AddContact(NewContact(NewRandomKademliaID(), TestconnectIP))
+	}
 }
 
 func (network *Network) TestPing() {
