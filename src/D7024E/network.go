@@ -87,6 +87,7 @@ func JoinNetwork(contactKnown *Contact) {
 }
 
 func (network *Network) SendPingMessage(contact *Contact) (Packet, error) {
+
 	response, err := network.UDPConnectionHandler(contact, network.NewPacket("ping")) //TODO handle the output packet
 
 	if err != nil {
@@ -94,9 +95,7 @@ func (network *Network) SendPingMessage(contact *Contact) (Packet, error) {
 		return response, err
 	}
 
-	fmt.Println(response.RPC)
 	network.ResponseHandler(&response)
-
 	return response, nil
 }
 
