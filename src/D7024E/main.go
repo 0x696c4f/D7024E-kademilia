@@ -73,18 +73,26 @@ func main() {
 			data := os.Args[2]
 			fmt.Println("storing ", data)
 		}
+	case "test":
+		{
+			fmt.Println("testing 2.3")
+			fmt.Println("My ID ", network.node.routingTable.me.ID)
+			//pack := network.NewPacket("ping")
+			//network.ResponseHandler(&pack)
+
+			//network.PopulateRoutingTable()
+			//network.TestRoutingTable()
+			ip := net.ParseIP("172.17.0.2")
+			for n := 0; n < 4; n++ {
+				network.TestPing(ip)
+			}
+			//correct way to call listening
+			//go network.Listen() //why we use go https://www.golang-book.com/books/intro/10
+
+		}
 	default:
 		printHelpExit("Invalid command.")
 	}
-	fmt.Println("My ID ", network.node.routingTable.me.ID)
-
-	//network.PopulateRoutingTable()
-	//network.TestRoutingTable()
-	for n := 0; n < 4; n++ {
-		network.TestPing()
-	}
-	//correct way to call listening
-	//go network.Listen() //why we use go https://www.golang-book.com/books/intro/10
 
 	//Testing call for Listen
 	network.Listen()
