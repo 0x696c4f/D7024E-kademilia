@@ -8,6 +8,10 @@ import (
 
 type Network struct {
 	node Kademlia
+
+	//Trying somethings
+	candidateListCh chan []Contact    //channel where candidateLists from the go routines will be written to
+	inactiveNodes   ContactCandidates //used in kademlia.go
 }
 
 type Packet struct {
@@ -18,17 +22,21 @@ type Packet struct {
 }
 
 /*
-	1:Open UDPPort for it to listen in on.
-		1.1:What UDP address should we listen in on
-	2:Close the connection
-		answer: defer connection.Close()
-	3:Create for loop to handle the inputs
-	4:Read the input
-	5:convert into unmarshaldata
-	6:add contact to the bucket
-	7:handle inquary
-	8:Unmarhal data
-	9:send back respons
+1:Open UDPPort for it to listen in on.
+
+	1.1:What UDP address should we listen in on
+
+2:Close the connection
+
+	answer: defer connection.Close()
+
+3:Create for loop to handle the inputs
+4:Read the input
+5:convert into unmarshaldata
+6:add contact to the bucket
+7:handle inquary
+8:Unmarhal data
+9:send back respons
 */
 func (network *Network) Listen( /*ip string, port int*/ ) {
 	// TODO
@@ -128,14 +136,27 @@ func (network *Network) UDPConnectionHandler(contact *Contact, msgPacket Packet)
 
 }
 
-func (network *Network) SendFindContactMessage(contact *Contact) {
+// Sends a FIND_NODE_RPC to a contact
+func (network *Network) SendFindContactMessage(contact *Contact, target *Contact) {
 	// TODO
+	UDPaddress := GetUDPAddress(contact)
+	Conn, dialError := net.DialUDP("udp", nil, &UDPaddress)
+	if dialError != nil {
+		fmt.Println("test")
+
+	}
+	targetString := target.String()
+	//Send FIND_NODE rpc together with the target contact
+	fmt.Fprintf(Conn, "FIND_NODE_RPC;"+targetString+";"+network.node.routingTable.me.ID.String()+"\n")
+	Conn.Close()
 }
 
+// Sends a FIND_VALUE_RPC to a contact
 func (network *Network) SendFindDataMessage(hash string) {
 	// TODO
 }
 
+// Sends a STORE_VALUE_RPC to a contact
 func (network *Network) SendStoreMessage(data []byte) {
 	// TODO
 }
