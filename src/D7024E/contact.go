@@ -71,3 +71,33 @@ func (candidates *ContactCandidates) Swap(i, j int) {
 func (candidates *ContactCandidates) Less(i, j int) bool {
 	return candidates.contacts[i].Less(&candidates.contacts[j])
 }
+
+/*
+	help functions for kademlia.go
+*/
+// Takes the candidateList and removes all the duplicate contacts
+func (candidates *ContactCandidates) RemoveDuplicates() {
+	newContactList := make([]Contact, 0)
+	for _, contact := range candidates.contacts {
+		duplicate := false
+		for _, notDuplicate := range newContactList {
+			if contact.ID.String() == notDuplicate.ID.String() {
+				duplicate = true
+			}
+		}
+		if !duplicate {
+			newContactList = append(newContactList, contact)
+		}
+	}
+	candidates.contacts = newContactList
+}
+
+func (candidates *ContactCandidates) RemoveContact(contactToRemove *Contact) {
+	newContactList := make([]Contact, 0)
+	for _, contact := range candidates.contacts {
+		if contact.ID.String() != contactToRemove.ID.String() {
+			newContactList = append(newContactList, contact)
+		}
+	}
+	candidates.contacts = newContactList
+}
