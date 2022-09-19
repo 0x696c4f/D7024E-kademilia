@@ -89,21 +89,27 @@ func NewNetwork(localIP string) *Network {
 	return network
 }
 
-func JoinNetwork(contactKnown *Contact) {
+func (network *Network) JoinNetwork(contactKnown *Contact) {
+	network.AddToRoutingTable(*contactKnown)
+	/*
+		1: Add contact to routing table
+		2: look upp my self with lookupNode
+	*/
+
 	fmt.Println("join network")
 	//TODO
 }
 
 func (network *Network) SendPingMessage(contact *Contact) (Packet, error) {
+
 	response, err := network.UDPConnectionHandler(contact, network.NewPacket("ping")) //TODO handle the output packet
 
 	if err != nil {
 		fmt.Println(err)
 		return response, err
+	} else {
+		network.ResponseHandler(&response)
 	}
-
-	fmt.Println(response.RPC)
-	network.ResponseHandler(&response)
 
 	return response, nil
 }
