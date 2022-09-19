@@ -61,7 +61,7 @@ func main() {
 			gatewayIP := IpPortSerialize(ip, remoteport)
 			fmt.Println("joining via", ip, ":", remoteport)
 			knownContact := NewContact(NewKademliaID(HashData(gatewayIP)), gatewayIP)
-			JoinNetwork(&knownContact)
+			network.JoinNetwork(&knownContact)
 		}
 	case "get":
 		{
@@ -82,10 +82,13 @@ func main() {
 
 			//network.PopulateRoutingTable()
 			//network.TestRoutingTable()
-			ip := net.ParseIP("172.17.0.2")
+			/*ip := net.ParseIP("172.17.0.2")
 			for n := 0; n < 4; n++ {
 				network.TestPing(ip)
-			}
+			}*/
+			TestconnectIP2 := "172.17.0.5:8080"
+			testContact := NewContact(NewKademliaID(HashData(TestconnectIP2)), TestconnectIP2) //IP address TODO
+			network.JoinNetwork(&testContact)
 			//correct way to call listening
 			//go network.Listen() //why we use go https://www.golang-book.com/books/intro/10
 
