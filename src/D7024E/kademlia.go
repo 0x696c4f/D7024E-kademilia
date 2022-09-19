@@ -18,6 +18,23 @@ func NewKademlia(ipAddress string) (node Kademlia) {
 }
 
 func (kademlia *Kademlia) LookupContact(target *Contact) {
+	closestContacts := kademlia.routingTable.FindClosestContacts(target)
+	/* The goal is to find a specified contact. How?
+	1: create a newtwork and add us the kademlia in to it.
+	2: Get the closest nodes within the routingTable
+	3: pick out the closest node out of the closest nodes
+	4: create for loop to find closer nodes
+		4.1: store which has been contacted
+		4.2: store the currently known closest nodes
+		4:3: store the currently closest node
+		--------------------------------------
+		5: send contact message to alpha number of items
+			5.1: add to contacted nodes
+			5.2 delete from closest nodes list
+		6: Check if we found the closest contact
+			6.1: if not
+			6.2: If yes break loop
+	*/
 	// TODO
 }
 
