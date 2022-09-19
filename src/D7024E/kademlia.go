@@ -8,6 +8,7 @@ import (
 //This Kademlia node
 type Kademlia struct {
 	routingTable *RoutingTable //Everyone else infromation
+	alpha        int
 }
 
 func NewKademlia(ipAddress string) (node Kademlia) {
@@ -18,7 +19,28 @@ func NewKademlia(ipAddress string) (node Kademlia) {
 }
 
 func (kademlia *Kademlia) LookupContact(target *Contact) {
-	closestContacts := kademlia.routingTable.FindClosestContacts(target)
+	//find the closest current contact to the looked upon contact
+	closestContactsList := kademlia.routingTable.FindClosestContacts(target.ID, kademlia.alpha)
+
+	//if we have any to go through
+	if len(closestContactsList) != 0 {
+		//current closest node
+		contactCandidate := NewContactCandidates(closestContactsList)
+		closestContact := &contactCandidate.Sort().contacts[0]
+
+		//keep track of what nodes we have gone through
+		contactedList := NewEmptyContactCandidates()
+
+		//keep track of the nodes we will go through, first shortlist
+		shortList := NewContactCandidates(closestContactsList)
+
+		//contact the list to se if you have any closer to what you are looking for
+		closestNode := true
+		for closestNode {
+			closestNode = false
+		}
+	}
+
 	/* The goal is to find a specified contact. How?
 	1: create a newtwork and add us the kademlia in to it.
 	2: Get the closest nodes within the routingTable
