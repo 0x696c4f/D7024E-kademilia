@@ -86,9 +86,9 @@ func main() {
 			for n := 0; n < 4; n++ {
 				network.TestPing(ip)
 			}*/
-			TestconnectIP2 := "172.17.0.5:8080"
-			testContact := NewContact(NewKademliaID(HashData(TestconnectIP2)), TestconnectIP2) //IP address TODO
-			network.JoinNetwork(&testContact)
+			rootip := "172.17.0.2:8080"
+			rootcontact := NewContact(NewKademliaID(HashData(rootip)), rootip) //IP address TODO
+			network.JoinNetwork(&rootcontact)
 			//correct way to call listening
 			//go network.Listen() //why we use go https://www.golang-book.com/books/intro/10
 
