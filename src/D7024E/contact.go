@@ -40,6 +40,18 @@ type ContactCandidates struct {
 	contacts []Contact
 }
 
+func NewContactCandidates(contactsInput []Contact) ContactCandidates {
+	candidates := ContactCandidates{
+		contacts: contactsInput,
+	}
+	return candidates
+}
+
+func NewEmptyContactCandidates() ContactCandidates {
+	candidates := ContactCandidates{}
+	return candidates
+}
+
 // Append an array of Contacts to the ContactCandidates
 func (candidates *ContactCandidates) Append(contacts []Contact) {
 	candidates.contacts = append(candidates.contacts, contacts...)
