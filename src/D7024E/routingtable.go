@@ -2,6 +2,7 @@ package main
 
 import (
 	"container/list"
+	"fmt"
 )
 
 const bucketSize = 20
@@ -102,9 +103,11 @@ func (network *Network) AddToRoutingTable(contact Contact) {
 	if element != nil { //the element is already in the bucket
 
 		bucket.MoveToFront(element)
+		fmt.Println("exist")
 
 	} else if element == nil && bucket.Len() < bucketSize { //not in bucket and the bucket is not full
 		network.node.routingTable.AddContact(contact)
+		fmt.Println("added")
 
 	} else if element == nil && bucket.Len() >= bucketSize { //not in bucket and the bucket is full
 
