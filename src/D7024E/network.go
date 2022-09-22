@@ -64,17 +64,6 @@ func (network *Network) Listen( /*ip string, port int*/ ) {
 	}
 }
 
-func (network *Network) NewPacket(version string) (pack Packet) {
-	if version == "ping" {
-		pack = Packet{
-			RPC:            "ping",
-			ID:             NewRandomKademliaID(),
-			SendingContact: network.node.routingTable.me,
-		}
-	}
-	return
-}
-
 func NewNetwork(localIP string) *Network {
 	network := &Network{}
 	network.node = NewKademlia(localIP)
@@ -83,21 +72,7 @@ func NewNetwork(localIP string) *Network {
 
 func (network *Network) JoinNetwork(contactKnown *Contact) {
 	network.AddToRoutingTable(*contactKnown)
-	network.node.LookupContact(&network.node.routingTable.me)
-}
-
-func (network *Network) SendPingMessage(contact *Contact) (Packet, error) {
-
-	response, err := network.UDPConnectionHandler(contact, network.NewPacket("ping")) //TODO handle the output packet
-
-	if err != nil {
-		fmt.Println(err)
-		return response, err
-	} else {
-		network.ResponseHandler(&response)
-	}
-
-	return response, nil
+	network.node.LookupContact(&network.node.routingTable.me) //TODO Most move back to the past alt network.node.routingTable.me
 }
 
 func (network *Network) UDPConnectionHandler(contact *Contact, msgPacket Packet) (Packet, error) {
@@ -128,8 +103,55 @@ func (network *Network) UDPConnectionHandler(contact *Contact, msgPacket Packet)
 
 }
 
-func (network *Network) SendFindContactMessage(contact *Contact) {
-	// TODO
+func (network *Network) NewPacket(version string) (pack Packet) {
+	if version == "ping" {
+		pack = Packet{
+			RPC:            "ping",
+			ID:             NewRandomKademliaID(),
+			SendingContact: network.node.routingTable.me,
+		}
+	} else if version == "find_Node" {
+		pack = Packet{
+			RPC:            "find_Node",
+			ID:             NewRandomKademliaID(),
+			SendingContact: network.node.routingTable.me,
+		}
+	}
+	return
+}
+
+func (network *Network) SendPingMessage(contact *Contact) (Packet, error) {
+
+	response, err := network.UDPConnectionHandler(contact, network.NewPacket("ping")) //TODO handle the output packet
+	if err != nil {
+		fmt.Println(err)
+		return response, err
+	} else {
+		network.ResponseHandler(&response)
+	}
+
+	return response, nil
+}
+
+func (network *Network) SendFindContactMessage(contact *Contact, target *Contact) {
+
+	/*//packet.Message = ContactToByte(*target)
+	fmt.Println("detta är min contact", contact)
+	tempContact := Contact{
+		Address: contact.Address,
+	}
+	fmt.Println("detta är min contact", contact.Address)
+
+	response, err := network.UDPConnectionHandler(&tempContact, network.NewPacket("ping")) //TODO handle the output packet
+
+	if err != nil {
+		fmt.Println(err)
+		//return response, err
+	} else {
+		network.ResponseHandler(&response)
+	}
+	//return response, nil
+	*/
 }
 
 func (network *Network) SendFindDataMessage(hash string) {
