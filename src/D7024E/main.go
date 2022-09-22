@@ -86,12 +86,21 @@ func main() {
 			for n := 0; n < 4; n++ {
 				network.TestPing(ip)
 			}*/
-			rootip := "172.17.0.2:8080"
+			ip1 := net.ParseIP("172.17.0.2")
+			ip2 := net.ParseIP("172.17.0.3")
+			ip3 := net.ParseIP("172.17.0.4")
+
+			network.TestPing(ip1)
+			network.TestPing(ip2)
+			network.TestPing(ip3)
+
+			/*rootip := "172.17.0.3:8080"
 			rootcontact := NewContact(NewKademliaID(HashData(rootip)), rootip) //IP address TODO
-			network.JoinNetwork(&rootcontact)
+			//network.JoinNetwork(&rootcontact)
+			network.node.LookupContact(&rootcontact)
 			//correct way to call listening
 			//go network.Listen() //why we use go https://www.golang-book.com/books/intro/10
-
+			*/
 		}
 	default:
 		printHelpExit("Invalid command.")
@@ -105,7 +114,6 @@ func main() {
 func (network *Network) TestRoutingTable() {
 	TestconnectIP2 := "172.17.0.5:8080"
 	testContact := NewContact(NewKademliaID(HashData(TestconnectIP2)), TestconnectIP2) //IP address TODO
-
 	//network.node.routingTable.AddContact(testContact)
 
 	network.AddToRoutingTable(testContact)
@@ -125,6 +133,8 @@ func (network *Network) TestPing(ip net.IP) {
 	//create a contact
 	TestconnectIP := ip.String() + ":8080"
 	contactFirst := NewContact(NewKademliaID(HashData(TestconnectIP)), TestconnectIP) //IP address TODO
+	fmt.Println(contactFirst)
+
 	//call ping message in network SendPingMessage(contact)
 	network.SendPingMessage(&contactFirst)
 }
