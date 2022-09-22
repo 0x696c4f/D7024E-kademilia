@@ -6,6 +6,17 @@ import (
 	"strconv"
 )
 
+func ContactToByte(con Contact) []byte {
+	message, _ := json.Marshal(con)
+	return message
+}
+
+func ByteToContact(message []byte) Contact {
+	con := Contact{}
+	json.Unmarshal(message, &con)
+	return con
+}
+
 func PacketToByte(pkt Packet) []byte {
 	message, _ := json.Marshal(pkt)
 	return message
