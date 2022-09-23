@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"sort"
+	"sync"
 )
 
 // Contact definition
@@ -37,6 +38,7 @@ func (contact *Contact) String() string {
 // ContactCandidates definition
 // stores an array of Contacts
 type ContactCandidates struct {
+	sync.Mutex
 	contacts []Contact
 }
 
