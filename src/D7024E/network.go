@@ -66,7 +66,7 @@ func (network *Network) Listen( /*ip string, port int*/ ) {
 
 func NewNetwork(localIP string) *Network {
 	network := &Network{}
-	network.node = NewKademlia(localIP)
+	network.node = network.NewKademlia(localIP)
 	return network
 }
 
@@ -76,8 +76,13 @@ func (network *Network) JoinNetwork(contactKnown *Contact) {
 }
 
 func (network *Network) UDPConnectionHandler(contact *Contact, msgPacket Packet) (Packet, error) {
+	fmt.Println("test1")
 	UDPaddress := GetUDPAddress(contact)
+	fmt.Println("test2")
+
 	msgMarshal := PacketToByte(msgPacket)
+	fmt.Println("test3")
+
 	//1-------------
 	Conn, dialError := net.DialUDP("udp", nil, &UDPaddress)
 	if dialError != nil {
@@ -134,7 +139,15 @@ func (network *Network) SendPingMessage(contact *Contact) (Packet, error) {
 }
 
 func (network *Network) SendFindContactMessage(contact *Contact, target *Contact) {
-
+	fmt.Println("hellå min vänn")
+	message := ContactToByte(*target)
+	pack := network.NewPacket("find_Node")
+	pack.Message = message
+	_, err := network.UDPConnectionHandler(contact, pack) //TODO handle the output packet
+	if err != nil {
+		fmt.Println(err)
+		//return response, err
+	}
 	/*//packet.Message = ContactToByte(*target)
 	fmt.Println("detta är min contact", contact)
 	tempContact := Contact{
