@@ -13,9 +13,10 @@ type Kademlia struct {
 	network      *Network
 }
 
-func NewKademlia(ipAddress string) (node Kademlia) {
+func (network *Network) NewKademlia(ipAddress string) (node Kademlia) {
 	ID := NewKademliaID(HashData(ipAddress))
 	node.routingTable = NewRoutingTable(NewContact(ID, ipAddress))
+	node.network = network
 	node.alpha = 4
 	return
 }
@@ -53,11 +54,7 @@ func (kademlia *Kademlia) LookupContact(target *Contact) {
 			var contactContacts []Contact
 			if shortList.Len() < kademlia.alpha {
 				contactContacts = shortList.GetContacts(shortList.Len())
-				fmt.Println("test", contactContacts)
 				for i := 0; i < shortList.Len(); i++ {
-					fmt.Println("test1", contactContacts[i])
-					fmt.Println("test2", &contactContacts[i])
-
 					//want to pick contact alpha amount of contacts but I don't know if is should be .node .routingtable or other
 					kademlia.network.SendFindContactMessage(&contactContacts[i], target) //TODO make it a go
 					//TODO add the once we have contacted to cotacted list
