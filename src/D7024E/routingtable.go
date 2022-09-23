@@ -90,8 +90,8 @@ func (routingTable *RoutingTable) getBucketIndex(id *KademliaID) int {
 
 func (network *Network) AddToRoutingTable(contact Contact) {
 	//I take this as we go into the right bucket
-	bucketIndex := network.node.routingTable.getBucketIndex(contact.ID)
-	bucket := network.node.routingTable.buckets[bucketIndex].list
+	bucketIndex := network.Node.RoutingTable.getBucketIndex(contact.ID)
+	bucket := network.Node.RoutingTable.buckets[bucketIndex].list
 
 	var element *list.Element
 	for item := bucket.Front(); item != nil; item = item.Next() { //check if contact is within the bucket
@@ -106,7 +106,7 @@ func (network *Network) AddToRoutingTable(contact Contact) {
 		fmt.Println("exist")
 
 	} else if element == nil && bucket.Len() < bucketSize { //not in bucket and the bucket is not full
-		network.node.routingTable.AddContact(contact)
+		network.Node.RoutingTable.AddContact(contact)
 		fmt.Println("added")
 
 	} else if element == nil && bucket.Len() >= bucketSize { //not in bucket and the bucket is full
@@ -117,7 +117,7 @@ func (network *Network) AddToRoutingTable(contact Contact) {
 
 		if response.RPC != "pong" { //if the last element doesn't responde
 			bucket.Remove(backElement)
-			network.node.routingTable.AddContact(contact)
+			network.Node.RoutingTable.AddContact(contact)
 		} else {
 			bucket.MoveToFront(backElement)
 		}

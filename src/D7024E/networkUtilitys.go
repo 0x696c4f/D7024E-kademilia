@@ -22,9 +22,10 @@ func PacketToByte(pkt Packet) []byte {
 	return message
 }
 func ByteToPacket(message []byte) Packet {
-	pkt := Packet{}
-	json.Unmarshal(message, &pkt)
-	return pkt
+	var pack Packet
+	json.Unmarshal([]byte(message), &pack)
+	return pack
+
 }
 
 func GetUDPAddress(contact *Contact) net.UDPAddr {

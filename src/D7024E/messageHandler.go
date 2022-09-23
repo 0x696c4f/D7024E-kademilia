@@ -5,18 +5,38 @@ import "fmt"
 func (network *Network) MessageHandler(message *Packet) Packet {
 
 	if message.RPC == "ping" {
-		return network.NewResponsePacket(message)
+		return network.NewPingResponsePacket(message)
+	} else if message.RPC == "find_Node" {
+		return network.NewFindNodeResponsePacket(message)
 	}
 	fmt.Println("Don't wanna see")
 
 	return Packet{}
 }
 
-func (network *Network) NewResponsePacket(message *Packet) (pack Packet) {
+func (network *Network) NewPingResponsePacket(message *Packet) (pack Packet) {
 	pack = Packet{
-		RPC:            "pong",     //TODO should it be called the same
-		ID:             message.ID, //TODO Should it have it's own or message ID
-		SendingContact: network.node.routingTable.me,
+		RPC:            "pong",
+		ID:             message.ID,
+		SendingContact: network.Node.RoutingTable.me,
 	}
+	return
+}
+
+func (network *Network) NewFindNodeResponsePacket(packMesssage *Packet) (pack Packet) {
+
+	closestContacts := network.Node.RoutingTable.FindClosestContacts(packMesssage.Message.TargetID, bucketSize)
+
+	response := MessageBody{
+		ContactList: closestContacts,
+	}
+
+	pack = Packet{
+		RPC:            "find_Node_res",
+		ID:             packMesssage.ID,
+		SendingContact: network.Node.RoutingTable.me,
+		Message:        response,
+	}
+
 	return
 }

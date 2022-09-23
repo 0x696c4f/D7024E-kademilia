@@ -8,27 +8,27 @@ import (
 
 //This Kademlia node
 type Kademlia struct {
-	routingTable *RoutingTable //Everyone else infromation
-	alpha        int
-	network      *Network
+	RoutingTable *RoutingTable //Everyone else infromation
+	Alpha        int
+	Network      *Network
 }
 
 func (network *Network) NewKademlia(ipAddress string) (node Kademlia) {
 	ID := NewKademliaID(HashData(ipAddress))
-	node.routingTable = NewRoutingTable(NewContact(ID, ipAddress))
-	node.network = network
-	node.alpha = 4
+	node.RoutingTable = NewRoutingTable(NewContact(ID, ipAddress))
+	node.Network = network
+	node.Alpha = 4
 	return
 }
 
 func (kademlia *Kademlia) LookupContact(target *Contact) {
 	fmt.Println("hejsan")
 	//find the closest current contact to the looked upon contact
-	fmt.Println(kademlia.alpha)
-	closestContactsList := kademlia.routingTable.FindClosestContacts(target.ID, kademlia.alpha)
+	fmt.Println(kademlia.Alpha)
+	closestContactsList := kademlia.RoutingTable.FindClosestContacts(target.ID, kademlia.Alpha)
 	fmt.Println(closestContactsList)
-	bucketIndex := kademlia.routingTable.getBucketIndex(target.ID)
-	bucket := kademlia.routingTable.buckets[bucketIndex].list
+	bucketIndex := kademlia.RoutingTable.getBucketIndex(target.ID)
+	bucket := kademlia.RoutingTable.buckets[bucketIndex].list
 	fmt.Println(bucket.Len())
 
 	//if we have any to go throughsu
@@ -48,22 +48,21 @@ func (kademlia *Kademlia) LookupContact(target *Contact) {
 		//contact the list to se if you have any closer to what you are looking for
 		closestNode := true
 		fmt.Println("before for")
-
 		for closestNode {
 			fmt.Println("afterfor")
 			var contactContacts []Contact
-			if shortList.Len() < kademlia.alpha {
+			if shortList.Len() < kademlia.Alpha {
 				contactContacts = shortList.GetContacts(shortList.Len())
 				for i := 0; i < shortList.Len(); i++ {
 					//want to pick contact alpha amount of contacts but I don't know if is should be .node .routingtable or other
-					kademlia.network.SendFindContactMessage(&contactContacts[i], target) //TODO make it a go
+					kademlia.Network.SendFindContactMessage(&contactContacts[i], target) //TODO make it a go
 					//TODO add the once we have contacted to cotacted list
 				}
 			} else {
-				contactContacts = shortList.GetContacts(kademlia.alpha)
-				for i := 0; i < kademlia.alpha; i++ {
+				contactContacts = shortList.GetContacts(kademlia.Alpha)
+				for i := 0; i < kademlia.Alpha; i++ {
 					//want to pick contact alpha amount of contacts but I don't know if is should be .node .routingtable or other
-					kademlia.network.SendFindContactMessage(&contactContacts[i], target) //TODO make it a go
+					kademlia.Network.SendFindContactMessage(&contactContacts[i], target) //TODO make it a go
 					//TODO add the once we have contacted to cotacted list
 				}
 			}

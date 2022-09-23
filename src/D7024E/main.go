@@ -75,8 +75,8 @@ func main() {
 		}
 	case "test":
 		{
-			fmt.Println("testing 2.3")
-			fmt.Println("My ID ", network.node.routingTable.me.ID)
+			fmt.Println("testing does it work even")
+			fmt.Println("My ID ", network.Node.RoutingTable.me.ID)
 			//pack := network.NewPacket("ping")
 			//network.ResponseHandler(&pack)
 
@@ -86,11 +86,10 @@ func main() {
 			for n := 0; n < 4; n++ {
 				network.TestPing(ip)
 			}*/
-			ip1 := net.ParseIP("172.17.0.2")
+
 			ip2 := net.ParseIP("172.17.0.3")
 			ip3 := net.ParseIP("172.17.0.4")
 
-			network.TestPing(ip1)
 			network.TestPing(ip2)
 			network.TestPing(ip3)
 
@@ -124,7 +123,7 @@ func (network *Network) PopulateRoutingTable() {
 	for n := 0; n < 20; n++ {
 
 		TestconnectIP := "172.17.0.4:8080"
-		network.node.routingTable.AddContact(NewContact(NewRandomKademliaID(), TestconnectIP))
+		network.Node.RoutingTable.AddContact(NewContact(NewRandomKademliaID(), TestconnectIP))
 	}
 }
 
