@@ -103,6 +103,7 @@ func (network *Network) UDPConnectionHandler(contact *Contact, msgPacket Packet)
 	response := ByteToPacket(buffert[0:step])
 	//6-------------
 	if readError != nil {
+		//TODO  delete the contact which didn't repsonde
 		return Packet{}, readError
 	}
 	return response, nil
@@ -146,23 +147,6 @@ func (network *Network) SendFindContactMessage(contact *Contact, target *Contact
 	pack := network.NewPacket("find_Node")
 	pack.Message = message
 	response, err := network.UDPConnectionHandler(contact, pack) //TODO handle the output packet
-	fmt.Println(response.Message.Test)
-	fmt.Println(response.Message.ContactList)
-
-	if err != nil {
-		fmt.Println(err)
-		//return response, err
-	} else {
-		fmt.Println("did it work-", response.RPC)
-	}
-	/*//packet.Message = ContactToByte(*target)
-	fmt.Println("detta är min contact", contact)
-	tempContact := Contact{
-		Address: contact.Address,
-	}
-	fmt.Println("detta är min contact", contact.Address)
-
-	response, err := network.UDPConnectionHandler(&tempContact, network.NewPacket("ping")) //TODO handle the output packet
 
 	if err != nil {
 		fmt.Println(err)
@@ -170,8 +154,6 @@ func (network *Network) SendFindContactMessage(contact *Contact, target *Contact
 	} else {
 		network.ResponseHandler(&response)
 	}
-	//return response, nil
-	*/
 }
 
 func (network *Network) SendFindDataMessage(hash string) {

@@ -47,7 +47,7 @@ func (kademlia *Kademlia) LookupContact(target *Contact) {
 
 		//contact the list to se if you have any closer to what you are looking for
 		closestNode := true
-		fmt.Println("before for")
+		fmt.Print("before for - ")
 		for closestNode {
 			fmt.Println("afterfor")
 			var contactContacts []Contact
