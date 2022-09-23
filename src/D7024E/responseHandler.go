@@ -1,7 +1,5 @@
 package main
 
-import "fmt"
-
 func (network *Network) ResponseHandler(response *Packet) {
 	if response.RPC == "pong" {
 		network.AddToRoutingTable(response.SendingContact)
@@ -12,5 +10,10 @@ func (network *Network) ResponseHandler(response *Packet) {
 
 func (network *Network) HandleFindNodeResponse(response *Packet) {
 	//TODO
-	fmt.Println("handle the find node responce")
+	network.AddToRoutingTable(response.SendingContact)
+
+	network.Node.Shortlist.Lock()
+	network.Node.Shortlist.Append(response.Message.ContactList)
+	network.Node.Shortlist.Unlock()
+
 }
