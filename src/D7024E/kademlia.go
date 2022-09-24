@@ -23,7 +23,7 @@ func (network *Network) NewKademlia(ipAddress string) (node Kademlia) {
 }
 
 func (kademlia *Kademlia) LookupContact(target *Contact) {
-	fmt.Println("hejsan")
+	fmt.Println("hejsan", target)
 	//find the closest current contact to the looked upon contact
 	fmt.Println(kademlia.Alpha)
 	closestContactsList := kademlia.RoutingTable.FindClosestContacts(target.ID, kademlia.Alpha)
@@ -43,37 +43,48 @@ func (kademlia *Kademlia) LookupContact(target *Contact) {
 		//keep track of what nodes we have gone through
 		//contactedList := NewEmptyContactCandidates()
 		//keep track of the nodes we will go through, first shortlist sorted
-		shortList := NewContactCandidates(closestContactsList)
+		var shortList ContactCandidates
+
+		shortList.contacts = closestContactsList
 		kademlia.Shortlist = &shortList
 
+		shortList.Sort()
 		//contact the list to se if you have any closer to what you are looking for
 		closestNode := true
 		fmt.Print("before for - ")
 		for closestNode {
 			fmt.Println("afterfor")
 			var contactContacts []Contact
+			fmt.Println("a-", shortList)
+
 			if shortList.Len() < kademlia.Alpha {
 				contactContacts = shortList.GetContacts(shortList.Len())
 				iterations := shortList.Len()
 				for i := 0; i < iterations; i++ {
 					//want to pick contact alpha amount of contacts but I don't know if is should be .node .routingtable or other
-					go kademlia.Network.SendFindContactMessage(&contactContacts[i], target) //TODO make it a go
+					kademlia.Network.SendFindContactMessage(&contactContacts[i], target) //TODO make it a go
 					//TODO add the once we have contacted to cotacted list
 				}
 			} else {
 				contactContacts = shortList.GetContacts(kademlia.Alpha)
 				for i := 0; i < kademlia.Alpha; i++ {
-					//want to pick contact alpha amount of contacts but I don't know if is should be .node .routingtable or other
+					//want to pick contact alpha amount of contacts but   I don't know if is should be .node .routingtable or other
 					kademlia.Network.SendFindContactMessage(&contactContacts[i], target) //TODO make it a go
 					//TODO add the once we have contacted to cotacted list
 				}
 			}
 
+			kademlia.ManageShortList(&shortList)
+
+			fmt.Println("left if statement")
 			//TODO manage shortlist with the new data from called nodes
 
 			if shortList.contacts[0].Less(closestContact) { //if new is cloesst
 				closestContact = &shortList.contacts[0] //change the new to the accuall closet
 			} else { //if the old is closest
+
+				fmt.Println("else statement")
+
 				//TODO break loop
 				/*
 					send a new sendfindcontactmessage to alpha contact not contacted yet.
@@ -81,6 +92,8 @@ func (kademlia *Kademlia) LookupContact(target *Contact) {
 
 			}
 			closestNode = false
+
+			fmt.Println("Set false")
 		}
 	}
 
@@ -117,4 +130,10 @@ func HashData(msg string) string {
 	hash.Write([]byte(msg))
 	hashString := hex.EncodeToString(hash.Sum(nil))
 	return hashString
+}
+
+func (kademlia *Kademlia) ManageShortList(shortlist *ContactCandidates) {
+	shortlist.Sort()
+	shortlist.RemoveContact(&kademlia.RoutingTable.me)
+	shortlist.RemoveDublicate()
 }
