@@ -11,7 +11,7 @@ import (
 type Contact struct {
 	ID       *KademliaID
 	Address  string
-	distance *KademliaID
+	Distance *KademliaID
 }
 
 // NewContact returns a new instance of a Contact
@@ -22,12 +22,12 @@ func NewContact(id *KademliaID, address string) Contact {
 // CalcDistance calculates the distance to the target and
 // fills the contacts distance field
 func (contact *Contact) CalcDistance(target *KademliaID) {
-	contact.distance = contact.ID.CalcDistance(target)
+	contact.Distance = contact.ID.CalcDistance(target)
 }
 
 // Less returns true if contact.distance < otherContact.distance
 func (contact *Contact) Less(otherContact *Contact) bool {
-	return contact.distance.Less(otherContact.distance)
+	return contact.Distance.Less(otherContact.Distance)
 }
 
 // String returns a simple string representation of a Contact
@@ -84,4 +84,31 @@ func (candidates *ContactCandidates) Swap(i, j int) {
 // the Contact at index j
 func (candidates *ContactCandidates) Less(i, j int) bool {
 	return candidates.contacts[i].Less(&candidates.contacts[j])
+}
+
+func (candidates *ContactCandidates) RemoveContact(removeTheContact *Contact) {
+	tempContactList := make([]Contact, 0)
+	for i := 0; i < candidates.Len(); i++ {
+		if !removeTheContact.ID.Equals(candidates.contacts[i].ID) {
+			tempContactList = append(tempContactList, candidates.contacts[i])
+		}
+	}
+	candidates.contacts = tempContactList
+}
+
+func (candidates *ContactCandidates) RemoveDublicate() {
+	cleanList := make([]Contact, 0)
+	for i := 0; i < candidates.Len(); i++ {
+		place := true
+		for j := 0; j < len(cleanList); j++ {
+			if cleanList[j].ID.Equals(candidates.contacts[i].ID) {
+				place = false
+			}
+		}
+		if place {
+			cleanList = append(cleanList, candidates.contacts[i])
+		}
+	}
+
+	candidates.contacts = cleanList
 }
