@@ -136,4 +136,7 @@ func (kademlia *Kademlia) ManageShortList(shortlist *ContactCandidates) {
 	shortlist.Sort()
 	shortlist.RemoveContact(&kademlia.RoutingTable.me)
 	shortlist.RemoveDublicate()
+	if bucketSize < shortlist.Len() {
+		shortlist.contacts = shortlist.GetContacts(bucketSize)
+	}
 }
