@@ -38,7 +38,7 @@ type Packet struct {
 func (network *Network) Listen( /*ip string, port int*/ ) {
 	// TODO
 	//1------------------
-	UDPaddress := GetUDPAddress(&network.Node.RoutingTable.me)
+	UDPaddress := GetUDPAddress(&network.Node.RoutingTable.Me)
 	Conn, listeningError := net.ListenUDP("udp", &UDPaddress)
 
 	if listeningError != nil {
@@ -77,7 +77,7 @@ func NewNetwork(localIP string) *Network {
 
 func (network *Network) JoinNetwork(contactKnown *Contact) {
 	network.AddToRoutingTable(*contactKnown)
-	network.Node.LookupContact(&network.Node.RoutingTable.me) //TODO Most move back to the past alt network.node.routingTable.me
+	network.Node.LookupContact(&network.Node.RoutingTable.Me) //TODO Most move back to the past alt network.node.routingTable.me
 }
 
 func (network *Network) UDPConnectionHandler(contact *Contact, msgPacket Packet) (Packet, error) {
@@ -115,13 +115,13 @@ func (network *Network) NewPacket(version string) (pack Packet) {
 		pack = Packet{
 			RPC:            "ping",
 			ID:             NewRandomKademliaID(),
-			SendingContact: network.Node.RoutingTable.me,
+			SendingContact: network.Node.RoutingTable.Me,
 		}
 	} else if version == "find_Node" {
 		pack = Packet{
 			RPC:            "find_Node",
 			ID:             NewRandomKademliaID(),
-			SendingContact: network.Node.RoutingTable.me,
+			SendingContact: network.Node.RoutingTable.Me,
 		}
 	}
 	return
@@ -141,6 +141,7 @@ func (network *Network) SendPingMessage(contact *Contact) (Packet, error) {
 }
 
 func (network *Network) SendFindContactMessage(contact *Contact, target *Contact) {
+	fmt.Println("value me", network.Node.RoutingTable.Me)
 	message := MessageBody{
 		TargetID: target.ID,
 	}

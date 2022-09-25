@@ -22,7 +22,6 @@ func main() {
 	port := 8080
 	myIP := GetOutboundIP()
 	localIP := IpPortSerialize(myIP, port)
-
 	network := NewNetwork(localIP)
 
 	switch os.Args[1] {
@@ -36,7 +35,15 @@ func main() {
 					printHelpExit("Invalid port.")
 				}
 			}
+
+			sGatewayIP := GetGatewayIP()
+			sGatewayContact := NewContact(NewKademliaID(HashData(sGatewayIP)), sGatewayIP)
+
+			if sGatewayIP != localIP {
+				network.JoinNetwork(&sGatewayContact)
+			}
 			fmt.Println("starting network on port", port)
+			network.Listen()
 		}
 	case "join":
 		{
@@ -56,9 +63,10 @@ func main() {
 					printHelpExit("Invalid port.")
 				}
 			}
-			network.TestPing(ip)
+			//network.TestPing(ip)
 
 			gatewayIP := IpPortSerialize(ip, remoteport)
+
 			fmt.Println("joining via", ip, ":", remoteport)
 			knownContact := NewContact(NewKademliaID(HashData(gatewayIP)), gatewayIP)
 			network.JoinNetwork(&knownContact)
@@ -73,40 +81,64 @@ func main() {
 			data := os.Args[2]
 			fmt.Println("storing ", data)
 		}
-	case "test":
+	case "ping":
 		{
-			fmt.Println("testing does it work even")
-			fmt.Println("My ID ", network.Node.RoutingTable.me.ID)
-			//pack := network.NewPacket("ping")
-			//network.ResponseHandler(&pack)
+			if len(os.Args) < 3 {
+				printHelpExit("No entrypoint given.")
+			}
+			ipStr := os.Args[2]
+			ip := net.ParseIP(ipStr)
+			if ip == nil {
+				printHelpExit("Invalid IP")
+			}
+			if len(os.Args) >= 4 {
+				var err error
+				if err != nil {
+					printHelpExit("Invalid port.")
+				}
+			}
 
-			//network.PopulateRoutingTable()
-			//network.TestRoutingTable()
-			/*ip := net.ParseIP("172.17.0.2")
-			for n := 0; n < 4; n++ {
-				network.TestPing(ip)
-			}*/
+			network.TestPing(ip)
+		}
+	case "contacts":
+		{
+			fmt.Println("all contacts - ", network.Node.GetAllContacts())
+		}
+	case "lookup":
+		{
+			remoteport := port
+			if len(os.Args) < 3 {
+				printHelpExit("No entrypoint given.")
+			}
+			ipStr := os.Args[2]
+			ip := net.ParseIP(ipStr)
+			if ip == nil {
+				printHelpExit("Invalid IP")
+			}
+			if len(os.Args) >= 4 {
+				var err error
+				remoteport, err = strconv.Atoi(os.Args[3])
+				if err != nil {
+					printHelpExit("Invalid port.")
+				}
+			}
 
-			ip2 := net.ParseIP("172.17.0.3")
-			ip3 := net.ParseIP("172.17.0.4")
+			gatewayIP := IpPortSerialize(ip, remoteport)
 
-			network.TestPing(ip2)
-			network.TestPing(ip3)
-
-			/*rootip := "172.17.0.3:8080"
-			rootcontact := NewContact(NewKademliaID(HashData(rootip)), rootip) //IP address TODO
-			//network.JoinNetwork(&rootcontact)
-			network.node.LookupContact(&rootcontact)
-			//correct way to call listening
-			//go network.Listen() //why we use go https://www.golang-book.com/books/intro/10
-			*/
+			fmt.Println("joining via", ip, ":", remoteport)
+			knownContact := NewContact(NewKademliaID(HashData(gatewayIP)), gatewayIP)
+			network.Node.LookupContact(&knownContact)
+		}
+	case "listen":
+		{
+			fmt.Println(NewKademliaID(HashData("172.17.0.2")), NewKademliaID(HashData("172.17.0.3")), NewKademliaID(HashData("172.17.0.4")))
+			network.Listen()
 		}
 	default:
 		printHelpExit("Invalid command.")
 	}
 
 	//Testing call for Listen
-	network.Listen()
 
 }
 

@@ -29,7 +29,7 @@ func (kademlia *Kademlia) LookupContact(target *Contact) {
 	closestContactsList := kademlia.RoutingTable.FindClosestContacts(target.ID, kademlia.Alpha)
 	fmt.Println(closestContactsList)
 	bucketIndex := kademlia.RoutingTable.getBucketIndex(target.ID)
-	bucket := kademlia.RoutingTable.buckets[bucketIndex].list
+	bucket := kademlia.RoutingTable.Buckets[bucketIndex].list
 	fmt.Println(bucket.Len())
 
 	//if we have any to go throughsu
@@ -73,7 +73,7 @@ func (kademlia *Kademlia) LookupContact(target *Contact) {
 					//TODO add the once we have contacted to cotacted list
 				}
 			}
-
+			fmt.Println("should have long shortlist-", shortList)
 			kademlia.ManageShortList(&shortList)
 
 			fmt.Println("left if statement")
@@ -134,7 +134,7 @@ func HashData(msg string) string {
 
 func (kademlia *Kademlia) ManageShortList(shortlist *ContactCandidates) {
 	shortlist.Sort()
-	shortlist.RemoveContact(&kademlia.RoutingTable.me)
+	shortlist.RemoveContact(&kademlia.RoutingTable.Me)
 	shortlist.RemoveDublicate()
 	if bucketSize < shortlist.Len() {
 		shortlist.contacts = shortlist.GetContacts(bucketSize)

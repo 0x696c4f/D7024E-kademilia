@@ -8,7 +8,7 @@ docker rm $(docker ps -a -q -f ancestor=kadlab)
 docker build . -t kadlab
 
 # start 50 containers
-for i in {1..3};
+for i in {1..5};
 do
 	./start.sh
 done

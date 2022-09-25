@@ -103,6 +103,7 @@ func (candidates *ContactCandidates) RemoveDublicate() {
 		for j := 0; j < len(cleanList); j++ {
 			if cleanList[j].ID.Equals(candidates.contacts[i].ID) {
 				place = false
+				//break
 			}
 		}
 		if place {
@@ -111,4 +112,23 @@ func (candidates *ContactCandidates) RemoveDublicate() {
 	}
 
 	candidates.contacts = cleanList
+}
+
+func XorContactLists(list1 []Contact, list2 []Contact) []Contact {
+	sumList := make([]Contact, 0)
+
+	for i := 0; i < len(list1); i++ {
+		place := true
+		for j := 0; j < len(list2); j++ {
+			if list1[i].ID.Equals(list2[j].ID) {
+				place = false
+				break
+			}
+		}
+		if place {
+			sumList = append(sumList, list1[i])
+		}
+	}
+
+	return sumList
 }

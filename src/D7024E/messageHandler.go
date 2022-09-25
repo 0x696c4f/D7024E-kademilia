@@ -18,7 +18,7 @@ func (network *Network) NewPingResponsePacket(message *Packet) (pack Packet) {
 	pack = Packet{
 		RPC:            "pong",
 		ID:             message.ID,
-		SendingContact: network.Node.RoutingTable.me,
+		SendingContact: network.Node.RoutingTable.Me,
 	}
 	return
 }
@@ -34,7 +34,7 @@ func (network *Network) NewFindNodeResponsePacket(packMesssage *Packet) (pack Pa
 	pack = Packet{
 		RPC:            "find_Node_res",
 		ID:             packMesssage.ID,
-		SendingContact: network.Node.RoutingTable.me,
+		SendingContact: network.Node.RoutingTable.Me,
 		Message:        response,
 	}
 

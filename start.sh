@@ -1,6 +1,6 @@
 #!/bin/sh
 
-PORT=4000
+PORT=8080
 COMMAND="/kademlia/bin/D7024E"
 OPTIONS=""
 
@@ -14,7 +14,7 @@ else
 	# find ip
 	IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $(docker ps -q|shuf|head -n 1))
 	echo "Join network via node $IP:$PORT..."
-	COMMAND="$COMMAND join $IP $PORT"
+	COMMAND="$COMMAND start"
 fi
 COMMAND="$COMMAND $OPTIONS"
 
