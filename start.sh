@@ -1,6 +1,6 @@
 #!/bin/sh
 
-PORT=8080
+PORT=10001
 COMMAND="/kademlia/bin/D7024E"
 OPTIONS=""
 

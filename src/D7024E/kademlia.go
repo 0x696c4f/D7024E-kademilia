@@ -8,28 +8,28 @@ import (
 
 //This Kademlia node
 type Kademlia struct {
+	Me           Contact
 	RoutingTable *RoutingTable //Everyone else infromation
 	Alpha        int
-	Network      *Network
 	Shortlist    *ContactCandidates
 }
 
 func (network *Network) NewKademlia(ipAddress string) (node Kademlia) {
 	ID := NewKademliaID(HashData(ipAddress))
-	node.RoutingTable = NewRoutingTable(NewContact(ID, ipAddress))
-	node.Network = network
+	node.Me = NewContact(ID, ipAddress)
+	node.RoutingTable = NewRoutingTable(node.Me)
 	node.Alpha = 4
 	return
 }
 
-func (kademlia *Kademlia) LookupContact(target *Contact) {
+func (network *Network) LookupContact(target *Contact) {
 	fmt.Println("hejsan", target)
 	//find the closest current contact to the looked upon contact
-	fmt.Println(kademlia.Alpha)
-	closestContactsList := kademlia.RoutingTable.FindClosestContacts(target.ID, kademlia.Alpha)
+	fmt.Println(network.Node.Alpha)
+	closestContactsList := network.Node.RoutingTable.FindClosestContacts(target.ID, network.Node.Alpha)
 	fmt.Println(closestContactsList)
-	bucketIndex := kademlia.RoutingTable.getBucketIndex(target.ID)
-	bucket := kademlia.RoutingTable.Buckets[bucketIndex].list
+	bucketIndex := network.Node.RoutingTable.getBucketIndex(target.ID)
+	bucket := network.Node.RoutingTable.buckets[bucketIndex].list
 	fmt.Println(bucket.Len())
 
 	//if we have any to go throughsu
@@ -46,7 +46,7 @@ func (kademlia *Kademlia) LookupContact(target *Contact) {
 		var shortList ContactCandidates
 
 		shortList.contacts = closestContactsList
-		kademlia.Shortlist = &shortList
+		network.Node.Shortlist = &shortList
 
 		shortList.Sort()
 		//contact the list to se if you have any closer to what you are looking for
@@ -57,24 +57,24 @@ func (kademlia *Kademlia) LookupContact(target *Contact) {
 			var contactContacts []Contact
 			fmt.Println("a-", shortList)
 
-			if shortList.Len() < kademlia.Alpha {
+			if shortList.Len() < network.Node.Alpha {
 				contactContacts = shortList.GetContacts(shortList.Len())
 				iterations := shortList.Len()
 				for i := 0; i < iterations; i++ {
 					//want to pick contact alpha amount of contacts but I don't know if is should be .node .routingtable or other
-					kademlia.Network.SendFindContactMessage(&contactContacts[i], target) //TODO make it a go
+					network.SendFindContactMessage(&contactContacts[i], target) //TODO make it a go
 					//TODO add the once we have contacted to cotacted list
 				}
 			} else {
-				contactContacts = shortList.GetContacts(kademlia.Alpha)
-				for i := 0; i < kademlia.Alpha; i++ {
+				contactContacts = shortList.GetContacts(network.Node.Alpha)
+				for i := 0; i < network.Node.Alpha; i++ {
 					//want to pick contact alpha amount of contacts but   I don't know if is should be .node .routingtable or other
-					kademlia.Network.SendFindContactMessage(&contactContacts[i], target) //TODO make it a go
+					network.SendFindContactMessage(&contactContacts[i], target) //TODO make it a go
 					//TODO add the once we have contacted to cotacted list
 				}
 			}
 			fmt.Println("should have long shortlist-", shortList)
-			kademlia.ManageShortList(&shortList)
+			network.Node.ManageShortList(&shortList)
 
 			fmt.Println("left if statement")
 			//TODO manage shortlist with the new data from called nodes
@@ -134,7 +134,7 @@ func HashData(msg string) string {
 
 func (kademlia *Kademlia) ManageShortList(shortlist *ContactCandidates) {
 	shortlist.Sort()
-	shortlist.RemoveContact(&kademlia.RoutingTable.Me)
+	shortlist.RemoveContact(&kademlia.RoutingTable.me)
 	shortlist.RemoveDublicate()
 	if bucketSize < shortlist.Len() {
 		shortlist.contacts = shortlist.GetContacts(bucketSize)

@@ -9,16 +9,17 @@ import (
 type MessageBody struct {
 	ContactList []Contact //shortList which is sent back
 	TargetID    *KademliaID
+	text        string
 }
 
 type Network struct {
-	Node Kademlia
+	Node *Kademlia
 }
 
 type Packet struct {
 	RPC            string
 	ID             *KademliaID //TODO delete
-	SendingContact Contact
+	SendingContact *Contact
 	Message        MessageBody
 }
 
@@ -38,7 +39,7 @@ type Packet struct {
 func (network *Network) Listen( /*ip string, port int*/ ) {
 	// TODO
 	//1------------------
-	UDPaddress := GetUDPAddress(&network.Node.RoutingTable.Me)
+	UDPaddress := GetUDPAddress(&network.Node.RoutingTable.me)
 	Conn, listeningError := net.ListenUDP("udp", &UDPaddress)
 
 	if listeningError != nil {
@@ -56,9 +57,9 @@ func (network *Network) Listen( /*ip string, port int*/ ) {
 		message := ByteToPacket(buffert[0:step])
 		fmt.Println("recived: ", message.RPC)
 		//6-------------------
-		network.AddToRoutingTable(message.SendingContact)
+		network.Node.RoutingTable.AddContact(*message.SendingContact)
 		//7-------------------
-		response := network.MessageHandler(&message)
+		response := network.MessageHandler(message)
 		//8-------------------
 		responsMarshal := PacketToByte(response)
 		//9-------------------
@@ -71,25 +72,28 @@ func (network *Network) Listen( /*ip string, port int*/ ) {
 
 func NewNetwork(localIP string) *Network {
 	network := &Network{}
-	network.Node = network.NewKademlia(localIP)
+	kad := network.NewKademlia(localIP)
+	network.Node = &kad
 	return network
 }
 
 func (network *Network) JoinNetwork(contactKnown *Contact) {
-	network.AddToRoutingTable(*contactKnown)
-	network.Node.LookupContact(&network.Node.RoutingTable.Me) //TODO Most move back to the past alt network.node.routingTable.me
+	network.Node.RoutingTable.AddContact(*contactKnown)
+	network.LookupContact(&network.Node.RoutingTable.me) //TODO Most move back to the past alt network.node.routingTable.me
 }
 
 func (network *Network) UDPConnectionHandler(contact *Contact, msgPacket Packet) (Packet, error) {
 	UDPaddress := GetUDPAddress(contact)
 
 	msgMarshal := PacketToByte(msgPacket)
+	fmt.Println("test1")
 
 	//1-------------
 	Conn, dialError := net.DialUDP("udp", nil, &UDPaddress)
 	if dialError != nil {
 		return Packet{}, dialError
 	}
+	fmt.Println("test2")
 
 	defer Conn.Close()
 	//2-------------
@@ -106,6 +110,11 @@ func (network *Network) UDPConnectionHandler(contact *Contact, msgPacket Packet)
 		//TODO  delete the contact which didn't repsonde
 		return Packet{}, readError
 	}
+
+	if (msgPacket.RPC == response.RPC) && msgPacket.ID.Equals(response.ID) {
+		network.Node.RoutingTable.AddContact(*response.SendingContact)
+	}
+
 	return response, nil
 
 }
@@ -115,13 +124,13 @@ func (network *Network) NewPacket(version string) (pack Packet) {
 		pack = Packet{
 			RPC:            "ping",
 			ID:             NewRandomKademliaID(),
-			SendingContact: network.Node.RoutingTable.Me,
+			SendingContact: &network.Node.RoutingTable.me,
 		}
 	} else if version == "find_Node" {
 		pack = Packet{
 			RPC:            "find_Node",
 			ID:             NewRandomKademliaID(),
-			SendingContact: network.Node.RoutingTable.Me,
+			SendingContact: &network.Node.RoutingTable.me,
 		}
 	}
 	return
@@ -134,26 +143,28 @@ func (network *Network) SendPingMessage(contact *Contact) (Packet, error) {
 		fmt.Println(err)
 		return response, err
 	} else {
-		network.ResponseHandler(&response)
+		network.ResponseHandler(response)
 	}
 
 	return response, nil
 }
 
 func (network *Network) SendFindContactMessage(contact *Contact, target *Contact) {
-	fmt.Println("value me", network.Node.RoutingTable.Me)
+	fmt.Println("value me", network.Node.RoutingTable.me)
 	message := MessageBody{
 		TargetID: target.ID,
 	}
 	pack := network.NewPacket("find_Node")
 	pack.Message = message
+
 	response, err := network.UDPConnectionHandler(contact, pack) //TODO handle the output packet
 
 	if err != nil {
 		fmt.Println(err)
 		//return response, err
 	} else {
-		network.ResponseHandler(&response)
+		fmt.Println("responce", response, " error ", err)
+		network.ResponseHandler(response)
 	}
 }
 
