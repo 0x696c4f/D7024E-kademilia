@@ -9,7 +9,6 @@ import (
 type MessageBody struct {
 	ContactList []Contact //shortList which is sent back
 	TargetID    *KademliaID
-	text        string
 }
 
 type Network struct {

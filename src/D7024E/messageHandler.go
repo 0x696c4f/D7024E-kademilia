@@ -40,10 +40,9 @@ func (network *Network) NewFindNodeResponsePacket(packMesssage Packet) Packet {
 		Message:        response,
 	}*/
 
-	network.Node.RoutingTable.AddContact(*packMesssage.SendingContact)
+	//network.Node.RoutingTable.AddContact(*packMesssage.SendingContact)
 
-	closestContacts := make([]Contact, 0)
-	closestContacts = network.Node.RoutingTable.FindClosestContacts(packMesssage.Message.TargetID, bucketSize)
+	closestContacts := network.Node.RoutingTable.FindClosestContacts(packMesssage.Message.TargetID, network.Node.Alpha)
 
 	response := MessageBody{
 		ContactList: closestContacts,

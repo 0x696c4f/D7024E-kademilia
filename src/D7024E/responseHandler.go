@@ -1,7 +1,7 @@
 package main
 
 func (network *Network) ResponseHandler(response Packet) {
-	if response.RPC == "find_Node_res" {
+	if response.RPC == "find_Node" {
 		network.HandleFindNodeResponse(response)
 	}
 }
