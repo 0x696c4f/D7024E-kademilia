@@ -151,7 +151,7 @@ func (network *Network) SendFindContactMessage(contact *Contact, target *Contact
 	response, err := network.UDPConnectionHandler(contact, pack) //TODO handle the output packet
 
 	if err == nil {
-		fmt.Println("responce", response, " error ", err) //delete
+		fmt.Println("responce", response) //delete
 		network.ResponseHandler(response)
 	} else {
 		fmt.Println(err)
