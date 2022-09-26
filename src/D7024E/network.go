@@ -6,15 +6,19 @@ import (
 	"time"
 )
 
+type MessageBody struct {
+	ContactList []Contact //shortList which is sent back
+	TargetID    *KademliaID
+}
+
 type Network struct {
-	node Kademlia
+	Node *Kademlia
 }
 
 type Packet struct {
 	RPC            string
-	ID             *KademliaID
-	SendingContact Contact
-	Message        []byte
+	SendingContact *Contact
+	Message        MessageBody
 }
 
 /*
@@ -30,10 +34,10 @@ type Packet struct {
 	8:Unmarhal data
 	9:send back respons
 */
-func (network *Network) Listen( /*ip string, port int*/ ) {
+func (network *Network) Listen() {
 	// TODO
 	//1------------------
-	UDPaddress := GetUDPAddress(&network.node.routingTable.me)
+	UDPaddress := GetUDPAddress(&network.Node.RoutingTable.me)
 	Conn, listeningError := net.ListenUDP("udp", &UDPaddress)
 
 	if listeningError != nil {
@@ -51,9 +55,9 @@ func (network *Network) Listen( /*ip string, port int*/ ) {
 		message := ByteToPacket(buffert[0:step])
 		fmt.Println("recived: ", message.RPC)
 		//6-------------------
-		network.AddToRoutingTable(message.SendingContact)
+		network.AddContact(*message.SendingContact)
 		//7-------------------
-		response := network.MessageHandler(&message)
+		response := network.MessageHandler(message)
 		//8-------------------
 		responsMarshal := PacketToByte(response)
 		//9-------------------
@@ -64,72 +68,94 @@ func (network *Network) Listen( /*ip string, port int*/ ) {
 	}
 }
 
-func (network *Network) NewPacket(version string) (pack Packet) {
-	if version == "ping" {
-		pack = Packet{
-			RPC:            "ping",
-			ID:             NewRandomKademliaID(),
-			SendingContact: network.node.routingTable.me,
-		}
-	}
-	return
-}
-
 func NewNetwork(localIP string) *Network {
 	network := &Network{}
-	network.node = NewKademlia(localIP)
+	kad := network.NewKademlia(localIP)
+	network.Node = &kad
 	return network
 }
 
 func (network *Network) JoinNetwork(contactKnown *Contact) {
-	network.AddToRoutingTable(*contactKnown)
-	network.node.LookupContact(&network.node.routingTable.me)
-}
-
-func (network *Network) SendPingMessage(contact *Contact) (Packet, error) {
-
-	response, err := network.UDPConnectionHandler(contact, network.NewPacket("ping")) //TODO handle the output packet
-
-	if err != nil {
-		fmt.Println(err)
-		return response, err
-	} else {
-		network.ResponseHandler(&response)
-	}
-
-	return response, nil
+	network.AddContact(*contactKnown)
+	network.LookupContact(&network.Node.RoutingTable.me)
 }
 
 func (network *Network) UDPConnectionHandler(contact *Contact, msgPacket Packet) (Packet, error) {
 	UDPaddress := GetUDPAddress(contact)
+
 	msgMarshal := PacketToByte(msgPacket)
+
 	//1-------------
 	Conn, dialError := net.DialUDP("udp", nil, &UDPaddress)
 	if dialError != nil {
-		fmt.Println("test")
 		return Packet{}, dialError
 	}
 
 	defer Conn.Close()
 	//2-------------
-	Conn.Write([]byte(msgMarshal)) //TODO check if write is correct, could be WriteToUDP
+	Conn.Write([]byte(msgMarshal))
 	//3-------------
 	Conn.SetDeadline(time.Now().Add(100 * time.Millisecond))
 	//4-------------
-	buffert := make([]byte, 1000)
+	buffert := make([]byte, 20000)
 	step, _, readError := Conn.ReadFromUDP(buffert)
 	//5-------------
 	response := ByteToPacket(buffert[0:step])
 	//6-------------
 	if readError != nil {
+		//TODO  delete the contact which didn't repsonde
 		return Packet{}, readError
 	}
+
+	network.AddContact(*response.SendingContact)
+
 	return response, nil
 
 }
 
-func (network *Network) SendFindContactMessage(contact *Contact) {
-	// TODO
+func (network *Network) NewPacket(version string) (pack Packet) {
+	pack = Packet{
+		SendingContact: &network.Node.RoutingTable.me,
+	}
+	if version == "ping" {
+		pack.RPC = "ping"
+		return
+	} else if version == "find_Node" {
+		pack.RPC = "find_Node"
+		return
+	}
+
+	return Packet{}
+}
+
+func (network *Network) SendPingMessage(contact *Contact) (Packet, error) {
+
+	response, err := network.UDPConnectionHandler(contact, network.NewPacket("ping"))
+	if err == nil {
+		network.ResponseHandler(response)
+	} else {
+		fmt.Println(err)
+	}
+
+	return response, err
+}
+
+func (network *Network) SendFindContactMessage(contact *Contact, target *Contact) {
+	fmt.Println("value contact - ", contact) //delete
+
+	pack := network.NewPacket("find_Node")
+	pack.Message = MessageBody{
+		TargetID: target.ID,
+	}
+
+	response, err := network.UDPConnectionHandler(contact, pack) //TODO handle the output packet
+
+	if err == nil {
+		fmt.Println("responce", response, " error ", err) //delete
+		network.ResponseHandler(response)
+	} else {
+		fmt.Println(err)
+	}
 }
 
 func (network *Network) SendFindDataMessage(hash string) {

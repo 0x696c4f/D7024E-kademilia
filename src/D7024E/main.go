@@ -56,12 +56,35 @@ func main() {
 					printHelpExit("Invalid port.")
 				}
 			}
-			network.TestPing(ip)
 
 			gatewayIP := IpPortSerialize(ip, remoteport)
 			fmt.Println("joining via", ip, ":", remoteport)
 			knownContact := NewContact(NewKademliaID(HashData(gatewayIP)), gatewayIP)
 			network.JoinNetwork(&knownContact)
+		}
+	case "ping":
+		{
+			remoteport := port
+			if len(os.Args) < 3 {
+				printHelpExit("No entrypoint given.")
+			}
+			ipStr := os.Args[2]
+			ip := net.ParseIP(ipStr)
+			if ip == nil {
+				printHelpExit("Invalid IP")
+			}
+			if len(os.Args) >= 4 {
+				var err error
+				remoteport, err = strconv.Atoi(os.Args[3])
+				if err != nil {
+					printHelpExit("Invalid port.")
+				}
+			}
+
+			connectIP := IpPortSerialize(ip, remoteport)
+			pingContact := NewContact(NewKademliaID(HashData(connectIP)), connectIP) //IP address TODO
+
+			network.SendPingMessage(&pingContact)
 		}
 	case "get":
 		{
@@ -73,51 +96,13 @@ func main() {
 			data := os.Args[2]
 			fmt.Println("storing ", data)
 		}
-	case "test":
-		{
-			fmt.Println("testing 2.3")
-			fmt.Println("My ID ", network.node.routingTable.me.ID)
-			//pack := network.NewPacket("ping")
-			//network.ResponseHandler(&pack)
 
-			//network.PopulateRoutingTable()
-			//network.TestRoutingTable()
-			/*ip := net.ParseIP("172.17.0.2")
-			for n := 0; n < 4; n++ {
-				network.TestPing(ip)
-			}*/
-			TestconnectIP2 := "172.17.0.5:8080"
-			testContact := NewContact(NewKademliaID(HashData(TestconnectIP2)), TestconnectIP2) //IP address TODO
-			network.JoinNetwork(&testContact)
-			//correct way to call listening
-			//go network.Listen() //why we use go https://www.golang-book.com/books/intro/10
-
-		}
 	default:
 		printHelpExit("Invalid command.")
 	}
 
 	//Testing call for Listen
 	network.Listen()
-
-}
-
-func (network *Network) TestRoutingTable() {
-	TestconnectIP2 := "172.17.0.5:8080"
-	testContact := NewContact(NewKademliaID(HashData(TestconnectIP2)), TestconnectIP2) //IP address TODO
-
-	//network.node.routingTable.AddContact(testContact)
-
-	network.AddToRoutingTable(testContact)
-}
-
-func (network *Network) PopulateRoutingTable() {
-
-	for n := 0; n < 20; n++ {
-
-		TestconnectIP := "172.17.0.4:8080"
-		network.node.routingTable.AddContact(NewContact(NewRandomKademliaID(), TestconnectIP))
-	}
 }
 
 func (network *Network) TestPing(ip net.IP) {
@@ -125,6 +110,8 @@ func (network *Network) TestPing(ip net.IP) {
 	//create a contact
 	TestconnectIP := ip.String() + ":8080"
 	contactFirst := NewContact(NewKademliaID(HashData(TestconnectIP)), TestconnectIP) //IP address TODO
+	fmt.Println(contactFirst)
+
 	//call ping message in network SendPingMessage(contact)
 	network.SendPingMessage(&contactFirst)
 }
@@ -139,11 +126,6 @@ func GetOutboundIP() net.IP {
 	localAddr := conn.LocalAddr().(*net.UDPAddr)
 
 	return localAddr.IP
-}
-
-func GetGatewayIP() (gatewayIP string) { //TODO set up a universal first IP address ending with xxx.xxx.xxx.2:8080
-	gatewayIP = "172.17.0.2:8080"
-	return
 }
 
 func IpPortSerialize(myIP net.IP, port int) string {
