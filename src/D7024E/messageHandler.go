@@ -1,42 +1,35 @@
 package main
 
-import "fmt"
-
-func (network *Network) MessageHandler(message *Packet) Packet {
+func (network *Network) MessageHandler(message Packet) Packet {
 
 	if message.RPC == "ping" {
 		return network.NewPingResponsePacket(message)
 	} else if message.RPC == "find_Node" {
 		return network.NewFindNodeResponsePacket(message)
 	}
-	fmt.Println("Don't wanna see")
 
 	return Packet{}
 }
 
-func (network *Network) NewPingResponsePacket(message *Packet) (pack Packet) {
+func (network *Network) NewPingResponsePacket(message Packet) (pack Packet) {
 	pack = Packet{
-		RPC:            "pong",
-		ID:             message.ID,
-		SendingContact: network.Node.RoutingTable.me,
+		RPC:            "ping",
+		SendingContact: &network.Node.RoutingTable.me,
 	}
 	return
 }
 
-func (network *Network) NewFindNodeResponsePacket(packMesssage *Packet) (pack Packet) {
-
-	closestContacts := network.Node.RoutingTable.FindClosestContacts(packMesssage.Message.TargetID, bucketSize)
+func (network *Network) NewFindNodeResponsePacket(packMesssage Packet) Packet {
 
 	response := MessageBody{
-		ContactList: closestContacts,
+		ContactList: network.Node.RoutingTable.FindClosestContacts(packMesssage.Message.TargetID, network.Node.Alpha),
 	}
 
-	pack = Packet{
-		RPC:            "find_Node_res",
-		ID:             packMesssage.ID,
-		SendingContact: network.Node.RoutingTable.me,
+	pack := Packet{
+		RPC:            "find_Node",
+		SendingContact: &network.Node.RoutingTable.me,
 		Message:        response,
 	}
 
-	return
+	return pack
 }

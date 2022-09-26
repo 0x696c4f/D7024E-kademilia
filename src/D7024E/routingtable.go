@@ -2,7 +2,6 @@ package main
 
 import (
 	"container/list"
-	"fmt"
 )
 
 const bucketSize = 20
@@ -25,10 +24,10 @@ func NewRoutingTable(me Contact) *RoutingTable {
 }
 
 // AddContact add a new contact to the correct Bucket
-func (routingTable *RoutingTable) AddContact(contact Contact) {
-	bucketIndex := routingTable.getBucketIndex(contact.ID)
-	bucket := routingTable.buckets[bucketIndex]
-	bucket.AddContact(contact)
+func (network *Network) AddContact(contact Contact) {
+	bucketIndex := network.Node.RoutingTable.getBucketIndex(contact.ID)
+	bucket := network.Node.RoutingTable.buckets[bucketIndex]
+	bucket.AddContact(contact, network)
 }
 
 func (routingTable *RoutingTable) RemoveContact(contact Contact) {
@@ -86,41 +85,4 @@ func (routingTable *RoutingTable) getBucketIndex(id *KademliaID) int {
 	}
 
 	return IDLength*8 - 1
-}
-
-func (network *Network) AddToRoutingTable(contact Contact) {
-	//I take this as we go into the right bucket
-	bucketIndex := network.Node.RoutingTable.getBucketIndex(contact.ID)
-	bucket := network.Node.RoutingTable.buckets[bucketIndex].list
-
-	var element *list.Element
-	for item := bucket.Front(); item != nil; item = item.Next() { //check if contact is within the bucket
-		if contact.ID.Equals(item.Value.(Contact).ID) {
-			element = item
-		}
-	}
-
-	if element != nil { //the element is already in the bucket
-
-		bucket.MoveToFront(element)
-		fmt.Println("exist")
-
-	} else if element == nil && bucket.Len() < bucketSize { //not in bucket and the bucket is not full
-		network.Node.RoutingTable.AddContact(contact)
-		fmt.Println("added")
-
-	} else if element == nil && bucket.Len() >= bucketSize { //not in bucket and the bucket is full
-
-		backElement := bucket.Back()
-		backcontact := backElement.Value.(Contact)
-		response, _ := network.SendPingMessage(&backcontact)
-
-		if response.RPC != "pong" { //if the last element doesn't responde
-			bucket.Remove(backElement)
-			network.Node.RoutingTable.AddContact(contact)
-		} else {
-			bucket.MoveToFront(backElement)
-		}
-
-	}
 }
