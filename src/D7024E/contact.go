@@ -86,6 +86,25 @@ func (candidates *ContactCandidates) Less(i, j int) bool {
 	return candidates.contacts[i].Less(&candidates.contacts[j])
 }
 
+func XorContactLists(list1 []Contact, list2 []Contact) []Contact {
+	sumList := make([]Contact, 0)
+
+	for i := 0; i < len(list1); i++ {
+		place := true
+		for j := 0; j < len(list2); j++ {
+			if list1[i].ID.Equals(list2[j].ID) {
+				place = false
+				break
+			}
+		}
+		if place {
+			sumList = append(sumList, list1[i])
+		}
+	}
+
+	return sumList
+}
+
 func (candidates *ContactCandidates) RemoveContact(removeTheContact *Contact) {
 	tempContactList := make([]Contact, 0)
 	for i := 0; i < candidates.Len(); i++ {
@@ -112,23 +131,4 @@ func (candidates *ContactCandidates) RemoveDublicate() {
 	}
 
 	candidates.contacts = cleanList
-}
-
-func XorContactLists(list1 []Contact, list2 []Contact) []Contact {
-	sumList := make([]Contact, 0)
-
-	for i := 0; i < len(list1); i++ {
-		place := true
-		for j := 0; j < len(list2); j++ {
-			if list1[i].ID.Equals(list2[j].ID) {
-				place = false
-				break
-			}
-		}
-		if place {
-			sumList = append(sumList, list1[i])
-		}
-	}
-
-	return sumList
 }

@@ -19,7 +19,7 @@ func newBucket() *bucket {
 
 // AddContact adds the Contact to the front of the bucket
 // or moves it to the front of the bucket if it already existed
-func (bucket *bucket) AddContact(contact Contact) {
+func (bucket *bucket) AddContact(contact Contact, network *Network) {
 	var element *list.Element
 	for e := bucket.list.Front(); e != nil; e = e.Next() {
 		nodeID := e.Value.(Contact).ID
@@ -32,6 +32,16 @@ func (bucket *bucket) AddContact(contact Contact) {
 	if element == nil {
 		if bucket.list.Len() < bucketSize {
 			bucket.list.PushFront(contact)
+		} else { //else function pinging node in the back to see if it response.
+			backElement := bucket.list.Back()
+			backcontact := backElement.Value.(Contact)
+			response, _ := network.SendPingMessage(&backcontact)
+			if response.RPC != "ping" { //if the last element doesn't responde
+				bucket.list.Remove(backElement)
+				bucket.list.PushFront(contact)
+			} else {
+				bucket.list.MoveToFront(backElement)
+			}
 		}
 	} else {
 		bucket.list.MoveToFront(element)

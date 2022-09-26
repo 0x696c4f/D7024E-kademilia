@@ -19,33 +19,28 @@ func main() {
 		printHelpExit("No command supplied.")
 	}
 
-	port := "10001"
-
+	port := 8080
 	myIP := GetOutboundIP()
-	localIP := myIP.String() + ":" + port // currentNode IP
-	//bnIP := GetbnIP(myIP.String())        // bootstrapNode IP
-	bnIP := "172.17.0.2:10001"
-
-	fmt.Println("Your IP is:", localIP)
-
-	//bnID := NewKademliaID(HashData(bnIP))
-	bnContact := NewContact(nil, bnIP)
+	localIP := IpPortSerialize(myIP, port)
 
 	network := NewNetwork(localIP)
 
 	switch os.Args[1] {
 	case "start":
 		{
-
-			if localIP != bnIP {
-				// Join network by sending LookupContact to bootstrapNode
-				network.SendPingMessage(&bnContact)
+			// start the network
+			if len(os.Args) >= 3 {
+				var err error
+				port, err = strconv.Atoi(os.Args[2])
+				if err != nil {
+					printHelpExit("Invalid port.")
+				}
 			}
-			network.LookupContact(&network.Node.RoutingTable.me)
-
+			fmt.Println("starting network on port", port)
 		}
-	case "ping":
+	case "join":
 		{
+			remoteport := port
 			if len(os.Args) < 3 {
 				printHelpExit("No entrypoint given.")
 			}
@@ -56,47 +51,64 @@ func main() {
 			}
 			if len(os.Args) >= 4 {
 				var err error
+				remoteport, err = strconv.Atoi(os.Args[3])
 				if err != nil {
 					printHelpExit("Invalid port.")
 				}
 			}
 
-			network.TestPing(ip)
+			gatewayIP := IpPortSerialize(ip, remoteport)
+			fmt.Println("joining via", ip, ":", remoteport)
+			knownContact := NewContact(NewKademliaID(HashData(gatewayIP)), gatewayIP)
+			network.JoinNetwork(&knownContact)
 		}
-	case "listen":
+	case "ping":
 		{
-			network.Listen()
+			remoteport := port
+			if len(os.Args) < 3 {
+				printHelpExit("No entrypoint given.")
+			}
+			ipStr := os.Args[2]
+			ip := net.ParseIP(ipStr)
+			if ip == nil {
+				printHelpExit("Invalid IP")
+			}
+			if len(os.Args) >= 4 {
+				var err error
+				remoteport, err = strconv.Atoi(os.Args[3])
+				if err != nil {
+					printHelpExit("Invalid port.")
+				}
+			}
+
+			connectIP := IpPortSerialize(ip, remoteport)
+			pingContact := NewContact(NewKademliaID(HashData(connectIP)), connectIP) //IP address TODO
+
+			network.SendPingMessage(&pingContact)
 		}
+	case "get":
+		{
+			hash := os.Args[2]
+			fmt.Println("getting ", hash)
+		}
+	case "put":
+		{
+			data := os.Args[2]
+			fmt.Println("storing ", data)
+		}
+
 	default:
 		printHelpExit("Invalid command.")
 	}
 
 	//Testing call for Listen
 	network.Listen()
-
-}
-
-func (network *Network) TestRoutingTable() {
-	TestconnectIP2 := "172.17.0.5:10001"
-	testContact := NewContact(NewKademliaID(HashData(TestconnectIP2)), TestconnectIP2) //IP address TODO
-	//network.node.routingTable.AddContact(testContact)
-
-	network.Node.RoutingTable.AddContact(testContact)
-}
-
-func (network *Network) PopulateRoutingTable() {
-
-	for n := 0; n < 20; n++ {
-
-		TestconnectIP := "172.17.0.4:10001"
-		network.Node.RoutingTable.AddContact(NewContact(NewRandomKademliaID(), TestconnectIP))
-	}
 }
 
 func (network *Network) TestPing(ip net.IP) {
 
 	//create a contact
-	TestconnectIP := ip.String() + ":10001"
+	TestconnectIP := ip.String() + ":8080"
 	contactFirst := NewContact(NewKademliaID(HashData(TestconnectIP)), TestconnectIP) //IP address TODO
 	fmt.Println(contactFirst)
 
@@ -116,12 +128,6 @@ func GetOutboundIP() net.IP {
 	return localAddr.IP
 }
 
-func GetbnIP(ipString string) string {
-	//stringList := strings.Split(ipString, ".")
-	//value := stringList[1]
-	bnIP := "172." + "17" + ".0.2:10001"
-	return bnIP
-}
 func IpPortSerialize(myIP net.IP, port int) string {
 	localIP := myIP.String() + ":" + strconv.Itoa(port)
 	return localIP

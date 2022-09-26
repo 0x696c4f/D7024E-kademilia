@@ -22,98 +22,70 @@ func (network *Network) NewKademlia(ipAddress string) (node Kademlia) {
 	return
 }
 
-func (network *Network) LookupContact(target *Contact) {
-	fmt.Println("hejsan", target)
+func (network *Network) LookupContact(target *Contact) *ContactCandidates {
 	//find the closest current contact to the looked upon contact
-	fmt.Println(network.Node.Alpha)
 	closestContactsList := network.Node.RoutingTable.FindClosestContacts(target.ID, network.Node.Alpha)
-	fmt.Println(closestContactsList)
-	bucketIndex := network.Node.RoutingTable.getBucketIndex(target.ID)
-	bucket := network.Node.RoutingTable.buckets[bucketIndex].list
-	fmt.Println(bucket.Len())
-
+	fmt.Println("closestContactList - ", closestContactsList)
 	//if we have any to go throughsu
 	if len(closestContactsList) != 0 {
-		fmt.Println("komm")
 		//current closest node
-		contactCandidate := NewContactCandidates(closestContactsList)
-		contactCandidate.Sort()
-		closestContact := &contactCandidate.contacts[0]
-
-		//keep track of what nodes we have gone through
-		//contactedList := NewEmptyContactCandidates()
-		//keep track of the nodes we will go through, first shortlist sorted
-		var shortList ContactCandidates
-
-		shortList.contacts = closestContactsList
+		shortList := NewContactCandidates(closestContactsList)
 		network.Node.Shortlist = &shortList
+		closestContact := &shortList.contacts[0]
 
-		shortList.Sort()
-		//contact the list to se if you have any closer to what you are looking for
-		closestNode := true
-		fmt.Print("before for - ")
-		for closestNode {
-			fmt.Println("afterfor")
-			var contactContacts []Contact
-			fmt.Println("a-", shortList)
+		var alreadyContacted []Contact
 
+		findingClosestNode := true
+		for findingClosestNode {
+			var contactsToContact []Contact
+			fmt.Println("New loop")
 			if shortList.Len() < network.Node.Alpha {
-				contactContacts = shortList.GetContacts(shortList.Len())
-				iterations := shortList.Len()
+				contactsToContact = shortList.GetContacts(shortList.Len())
+				fmt.Println("contactContacts - ", contactsToContact)
+
+				iterations := shortList.Len() //This is needed, because the shortlist is changed within the function
 				for i := 0; i < iterations; i++ {
 					//want to pick contact alpha amount of contacts but I don't know if is should be .node .routingtable or other
-					network.SendFindContactMessage(&contactContacts[i], target) //TODO make it a go
+					network.SendFindContactMessage(&contactsToContact[i], target) //TODO make it a go
+					alreadyContacted = append(alreadyContacted, contactsToContact[i])
 					//TODO add the once we have contacted to cotacted list
 				}
 			} else {
-				contactContacts = shortList.GetContacts(network.Node.Alpha)
+				contactsToContact = shortList.GetContacts(network.Node.Alpha)
 				for i := 0; i < network.Node.Alpha; i++ {
 					//want to pick contact alpha amount of contacts but   I don't know if is should be .node .routingtable or other
-					network.SendFindContactMessage(&contactContacts[i], target) //TODO make it a go
-					//TODO add the once we have contacted to cotacted list
+					network.SendFindContactMessage(&contactsToContact[i], target) //TODO make it a go
+					alreadyContacted = append(alreadyContacted, contactsToContact[i])
 				}
 			}
-			fmt.Println("should have long shortlist-", shortList)
-			network.Node.ManageShortList(&shortList)
 
-			fmt.Println("left if statement")
-			//TODO manage shortlist with the new data from called nodes
+			network.Node.ManageShortList(&shortList)
+			fmt.Println("managed shortlist-", network.Node.Shortlist)
 
 			if shortList.contacts[0].Less(closestContact) { //if new is cloesst
 				closestContact = &shortList.contacts[0] //change the new to the accuall closet
 			} else { //if the old is closest
+				fmt.Println("ending, check list")
+				findingClosestNode = false
 
-				fmt.Println("else statement")
+				lastContactContacts := XorContactLists(shortList.contacts, alreadyContacted)
 
-				//TODO break loop
-				/*
-					send a new sendfindcontactmessage to alpha contact not contacted yet.
-				*/
+				for i := 0; i < len(lastContactContacts); i++ {
+					network.SendFindContactMessage(&lastContactContacts[i], target)
+				}
 
+				network.Node.ManageShortList(&shortList)
 			}
-			closestNode = false
 
-			fmt.Println("Set false")
 		}
-	}
+		fmt.Println("Finishing Shortlist")
+		fmt.Println(shortList)
 
-	/* The goal is to find a specified contact. How?
-	1: create a newtwork and add us the kademlia in to it.
-	2: Get the closest nodes within the routingTable
-	3: pick out the closest node out of the closest nodes
-	4: create for loop to find closer nodes
-		4.1: store which has been contacted
-		4.2: store the currently known closest nodes
-		4:3: store the currently closest node
-		--------------------------------------
-		5: send contact message to alpha number of items
-			5.1: add to contacted nodes
-			5.2 delete from closest nodes list
-		6: Check if we found the closest contact
-			6.1: if not
-			6.2: If yes break loop
-	*/
-	// TODO
+		return &shortList
+	} else {
+		emptyStuct := NewEmptyContactCandidates()
+		return &emptyStuct
+	}
 }
 
 func (kademlia *Kademlia) LookupData(hash string) {
@@ -134,7 +106,7 @@ func HashData(msg string) string {
 
 func (kademlia *Kademlia) ManageShortList(shortlist *ContactCandidates) {
 	shortlist.Sort()
-	shortlist.RemoveContact(&kademlia.RoutingTable.me)
+	shortlist.RemoveContact(&kademlia.RoutingTable.me) //remove ourself
 	shortlist.RemoveDublicate()
 	if bucketSize < shortlist.Len() {
 		shortlist.contacts = shortlist.GetContacts(bucketSize)

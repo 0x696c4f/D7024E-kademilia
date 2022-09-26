@@ -24,10 +24,10 @@ func NewRoutingTable(me Contact) *RoutingTable {
 }
 
 // AddContact add a new contact to the correct Bucket
-func (routingTable *RoutingTable) AddContact(contact Contact) {
-	bucketIndex := routingTable.getBucketIndex(contact.ID)
-	bucket := routingTable.buckets[bucketIndex]
-	bucket.AddContact(contact)
+func (network *Network) AddContact(contact Contact) {
+	bucketIndex := network.Node.RoutingTable.getBucketIndex(contact.ID)
+	bucket := network.Node.RoutingTable.buckets[bucketIndex]
+	bucket.AddContact(contact, network)
 }
 
 func (routingTable *RoutingTable) RemoveContact(contact Contact) {
