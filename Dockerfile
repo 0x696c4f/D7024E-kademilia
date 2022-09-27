@@ -1,4 +1,4 @@
-FROM debian:latest
+FROM golang:latest
 
 # Add the commands needed to put your compiled go binary in the container and
 # run it when the container starts.
@@ -15,15 +15,15 @@ FROM debian:latest
 RUN apt update
 RUN apt install -yq apt-utils
 RUN apt upgrade -y --fix-missing
-RUN apt install -yq netcat iproute2 golang
+RUN apt install -yq netcat iproute2 git
 #RUN apt-get install iputils-ping
 
 # go compile
-COPY . /kademlia
 ENV GOPATH=/kademlia/
 ENV GO111MODULE=off
+COPY . /kademlia
+RUN go get github.com/gin-gonic/gin
 WORKDIR /kademlia/src/D7024E
-#RUN go get -u github.com/gin-gonic/gin
 RUN go install
 
 #ENTRYPOINT go run /src/main.go

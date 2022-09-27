@@ -88,12 +88,16 @@ func (network *Network) LookupContact(target *Contact) *ContactCandidates {
 	}
 }
 
-func (kademlia *Kademlia) LookupData(hash string) {
+func (kademlia *Kademlia) LookupData(hash string) (data []byte){
+	fmt.Println("Looking up",hash)
 	// TODO
+	return ([]byte("example data"))
 }
 
-func (kademlia *Kademlia) Store(data []byte) {
+func (kademlia *Kademlia) Store(data []byte) (hash *KademliaID){
+	fmt.Println("Storing",data)
 	// TODO
+	return NewRandomKademliaID()
 }
 
 //(https://stackoverflow.com/questions/10701874/generating-the-sha-hash-of-a-string-using-golang)
