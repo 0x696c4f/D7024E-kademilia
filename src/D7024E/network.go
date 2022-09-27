@@ -139,8 +139,8 @@ func (network *Network) SendLocalGet(hash string) ([]byte) {
 		},
 	}
 
-	fmt.Println("[NETWORK] send local get to ",fmt.Sprint("127.0.0.1:%d",Port))
-	instance := NewContact(NewRandomKademliaID(),fmt.Sprint("127.0.0.1:%d",Port))
+	fmt.Println("[NETWORK] send local get to ",fmt.Sprintf("127.0.0.1:%d",Port))
+	instance := NewContact(NewRandomKademliaID(),fmt.Sprintf("127.0.0.1:%d",Port))
 	response, err := network.UDPConnectionHandler(&instance, pack)
 	if err == nil {
 		network.ResponseHandler(response)
@@ -159,8 +159,8 @@ func (network *Network) SendLocalPut(data []byte) (string) {
 		},
 	}
 
-	fmt.Println("[NETWORK] send local put to ",fmt.Sprint("127.0.0.1:%d",Port))
-	instance := NewContact(NewRandomKademliaID(),fmt.Sprint("127.0.0.1:%d",Port))
+	fmt.Println("[NETWORK] send local put to ",fmt.Sprintf("127.0.0.1:%d",Port))
+	instance := NewContact(NewRandomKademliaID(),fmt.Sprintf("127.0.0.1:%d",Port))
 	response, err := network.UDPConnectionHandler(&instance, pack)
 	if err == nil {
 		network.ResponseHandler(response)
