@@ -13,6 +13,8 @@ type MessageBody struct {
 
 type Network struct {
 	Node *Kademlia
+
+	storeValues map[KademliaID]string //Store data that is recived from the store RPC
 }
 
 type Packet struct {
@@ -72,7 +74,8 @@ func NewNetwork(localIP string) *Network {
 	network := &Network{}
 	kad := NewKademlia(localIP)
 	network.Node = &kad
-	return network
+	storeValues := make(map[KademliaID]string)
+	return network, storeValues
 }
 
 func (network *Network) JoinNetwork(contactKnown *Contact) {
@@ -123,6 +126,9 @@ func (network *Network) NewPacket(version string) (pack Packet) {
 	} else if version == "find_Node" {
 		pack.RPC = "find_Node"
 		return
+	}else if version == "store_Value"{
+		pack.RPC = "store_Value"
+		return
 	}
 
 	return Packet{}
@@ -158,10 +164,22 @@ func (network *Network) SendFindContactMessage(contact *Contact, target *Contact
 	}
 }
 
-func (network *Network) SendFindDataMessage(hash string) {
-	// TODO
+func (network *Network) SendFindDataMessage(hash string) {// TODO
+	
 }
 
-func (network *Network) SendStoreMessage(data []byte) {
-	// TODO
+func (network *Network) SendStoreMessage(data []byte, storeAtContact *Contact) {// TODO
+	pack := network.NewPacket("store_Value")
+	pack.Message = MessageBody{
+		TargetID: storeAtContact.ID,
+	}
+	
+	response, err := network.UDPConnectionHandler(storeAtContact, pack)
+	if err == nil {
+		network.ResponseHandler(response)
+	} else {
+		fmt.Println(err)
+	}
+
+	return response, err
 }
