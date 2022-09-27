@@ -7,6 +7,12 @@ func (network *Network) MessageHandler(message Packet) Packet {
 	} else if message.RPC == "find_Node" {
 		return network.NewFindNodeResponsePacket(message)
 	}
+	if message.RPC == "local_get" {
+		network.Node.LookupData(message.Message.TargetID.String())
+	}
+	if message.RPC == "local_put" {
+		network.Node.Store(message.Message.Data)
+	}
 
 	return Packet{}
 }
@@ -32,4 +38,20 @@ func (network *Network) NewFindNodeResponsePacket(packMesssage Packet) Packet {
 	}
 
 	return pack
+}
+
+func (network *Network) NewLocalGetPacket(message Packet) (pack Packet) {
+	pack = Packet{
+		RPC:            "local_get",
+		SendingContact: &network.Node.RoutingTable.me,
+	}
+	return
+}
+
+func (network *Network) NewLocalPutPacket(message Packet) (pack Packet) {
+	pack = Packet{
+		RPC:            "local_put",
+		SendingContact: &network.Node.RoutingTable.me,
+	}
+	return
 }

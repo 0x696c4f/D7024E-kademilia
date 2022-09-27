@@ -89,10 +89,12 @@ func (network *Network) LookupContact(target *Contact) *ContactCandidates {
 }
 
 func (kademlia *Kademlia) LookupData(hash string) {
+	fmt.Println("Looking up",hash)
 	// TODO
 }
 
 func (kademlia *Kademlia) Store(data []byte) {
+	fmt.Println("Storing",data)
 	// TODO
 }
 

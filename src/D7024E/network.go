@@ -3,12 +3,14 @@ package main
 import (
 	"fmt"
 	"net"
+	"os"
 	"time"
 )
 
 type MessageBody struct {
 	ContactList []Contact //shortList which is sent back
 	TargetID    *KademliaID
+	Data	[]byte
 }
 
 type Network struct {
@@ -126,6 +128,45 @@ func (network *Network) NewPacket(version string) (pack Packet) {
 	}
 
 	return Packet{}
+}
+
+func (network *Network) SendLocalGet(hash string) ([]byte) {
+	var pack = Packet {
+		SendingContact: &network.Node.RoutingTable.me,
+		RPC: "local_get",
+		Message: MessageBody{
+			TargetID: NewKademliaID(hash),
+		},
+	}
+
+	instance := NewContact(NewRandomKademliaID(),fmt.Sprint("127.0.0.1:%d",Port))
+	response, err := network.UDPConnectionHandler(&instance, pack)
+	if err == nil {
+		network.ResponseHandler(response)
+	} else {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	return response.Message.Data
+}
+func (network *Network) SendLocalPut(data []byte) (string) {
+	var pack = Packet {
+		SendingContact: &network.Node.RoutingTable.me,
+		RPC: "local_put",
+		Message: MessageBody{
+			Data: data,
+		},
+	}
+
+	instance := NewContact(NewRandomKademliaID(),fmt.Sprint("127.0.0.1:%d",Port))
+	response, err := network.UDPConnectionHandler(&instance, pack)
+	if err == nil {
+		network.ResponseHandler(response)
+	} else {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	return response.Message.TargetID.String()
 }
 
 func (network *Network) SendPingMessage(contact *Contact) (Packet, error) {

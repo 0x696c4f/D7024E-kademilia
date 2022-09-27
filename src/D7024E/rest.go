@@ -1,9 +1,7 @@
 package main
 
-/*
 import (
 	"net/http"
-
 	"github.com/gin-gonic/gin"
 )
 
@@ -15,7 +13,9 @@ type msg struct {
 func getObject(c *gin.Context) {
 	hash := c.Param("hash")
 	//TODO: load data
-	data := "data with hash " + hash
+
+	var net = NewNetwork("127.0.0.1")
+	data:= net.SendLocalGet(hash)
 
 	var newMsg msg
 	newMsg.Data = string(data)
@@ -24,13 +24,15 @@ func getObject(c *gin.Context) {
 }
 
 func postData(c *gin.Context) {
+	var net = NewNetwork("127.0.0.1")
 	var newMsg msg
 
 	data, _ := c.GetRawData()
 	newMsg.Data = string(data)
 
 	//TODO: use newMsg to store data, get hash
-	hash := "abcd"
+	var hash string
+	hash = net.SendLocalPut(data)
 
 	c.Writer.Header().Set("Location", "/objects/"+hash)
 
@@ -45,4 +47,3 @@ func RestApi() {
 
 	router.Run("localhost:8080")
 }
-*/
