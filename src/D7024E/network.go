@@ -59,6 +59,7 @@ func (network *Network) Listen() {
 		fmt.Println("recived: ", message.RPC)
 		//6-------------------
 		if(message.RPC != "local_get"&& message.RPC != "local_put") {
+			fmt.Println("[NETWORK] adding contact for RPC type",message.RPC)
 			network.AddContact(*message.SendingContact)
 		}
 		//7-------------------
@@ -113,6 +114,7 @@ func (network *Network) UDPConnectionHandler(contact *Contact, msgPacket Packet)
 	}
 
 	if(response.RPC != "local_get"&& response.RPC != "local_put") {
+		fmt.Println("[NETWORK] adding contact for RPC type",response.RPC)
 		network.AddContact(*response.SendingContact)
 	}
 
