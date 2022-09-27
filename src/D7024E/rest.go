@@ -14,7 +14,7 @@ func getObject(c *gin.Context) {
 	hash := c.Param("hash")
 	//TODO: load data
 
-	var net = NewNetwork("127.0.0.1")
+	var net = NewNetwork("127.0.0.1:54321")
 	data:= net.SendLocalGet(hash)
 
 	var newMsg msg
@@ -24,7 +24,7 @@ func getObject(c *gin.Context) {
 }
 
 func postData(c *gin.Context) {
-	var net = NewNetwork("127.0.0.1")
+	var net = NewNetwork("127.0.0.1:54321")
 	var newMsg msg
 
 	data, _ := c.GetRawData()

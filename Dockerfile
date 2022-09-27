@@ -19,9 +19,9 @@ RUN apt install -yq netcat iproute2 git
 #RUN apt-get install iputils-ping
 
 # go compile
-COPY . /kademlia
 ENV GOPATH=/kademlia/
 ENV GO111MODULE=off
+COPY . /kademlia
 RUN go get github.com/gin-gonic/gin
 WORKDIR /kademlia/src/D7024E
 RUN go install
