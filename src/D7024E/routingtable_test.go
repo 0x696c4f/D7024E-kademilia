@@ -6,6 +6,8 @@ import (
 )
 
 func TestRoutingTable(t *testing.T) {
+	fmt.Println("implement routingTable testing")
+
 	rt := NewRoutingTable(NewContact(NewKademliaID("FFFFFFFF00000000000000000000000000000000"), "localhost:8000"))
 
 	network := NewNetwork("localhost:8000")
@@ -21,4 +23,8 @@ func TestRoutingTable(t *testing.T) {
 	for i := range contacts {
 		fmt.Println(contacts[i].String())
 	}
+	fmt.Println(contacts)
+
+	//remove contact
+	network.Node.RoutingTable.RemoveContact(contacts[0])
 }

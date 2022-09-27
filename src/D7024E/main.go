@@ -25,6 +25,7 @@ func main() {
 
 	network := NewNetwork(localIP)
 
+	normal := true
 	switch os.Args[1] {
 	case "start":
 		{
@@ -37,6 +38,11 @@ func main() {
 				}
 			}
 			fmt.Println("starting network on port", port)
+			if len(os.Args) >= 4 {
+				if os.Args[3] == "test" {
+					normal = false
+				}
+			}
 		}
 	case "join":
 		{
@@ -54,6 +60,11 @@ func main() {
 				remoteport, err = strconv.Atoi(os.Args[3])
 				if err != nil {
 					printHelpExit("Invalid port.")
+				}
+			}
+			if len(os.Args) >= 5 {
+				if os.Args[4] == "test" {
+					normal = false
 				}
 			}
 
@@ -80,6 +91,11 @@ func main() {
 					printHelpExit("Invalid port.")
 				}
 			}
+			if len(os.Args) >= 5 {
+				if os.Args[4] == "test" {
+					normal = false
+				}
+			}
 
 			connectIP := IpPortSerialize(ip, remoteport)
 			pingContact := NewContact(NewKademliaID(HashData(connectIP)), connectIP) //IP address TODO
@@ -89,11 +105,21 @@ func main() {
 	case "get":
 		{
 			hash := os.Args[2]
+			if len(os.Args) >= 4 {
+				if os.Args[3] == "test" {
+					normal = false
+				}
+			}
 			fmt.Println("getting ", hash)
 		}
 	case "put":
 		{
 			data := os.Args[2]
+			if len(os.Args) >= 4 {
+				if os.Args[3] == "test" {
+					normal = false
+				}
+			}
 			fmt.Println("storing ", data)
 		}
 
@@ -102,18 +128,11 @@ func main() {
 	}
 
 	//Testing call for Listen
-	network.Listen()
-}
 
-func (network *Network) TestPing(ip net.IP) {
+	if normal {
+		network.Listen()
+	}
 
-	//create a contact
-	TestconnectIP := ip.String() + ":8080"
-	contactFirst := NewContact(NewKademliaID(HashData(TestconnectIP)), TestconnectIP) //IP address TODO
-	fmt.Println(contactFirst)
-
-	//call ping message in network SendPingMessage(contact)
-	network.SendPingMessage(&contactFirst)
 }
 
 func GetOutboundIP() net.IP {
