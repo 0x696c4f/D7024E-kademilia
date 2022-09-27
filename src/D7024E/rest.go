@@ -1,9 +1,10 @@
 package main
 
 import (
-	"net/http"
-	"github.com/gin-gonic/gin"
 	"fmt"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 type msg struct {
@@ -13,10 +14,10 @@ type msg struct {
 // getAlbums responds with the list of all albums as JSON.
 func getObject(c *gin.Context) {
 	hash := c.Param("hash")
-	fmt.Println("[REST] loading",hash)
+	fmt.Println("[REST] loading", hash)
 
 	var net = NewNetwork("127.0.0.1:54321")
-	data:= net.SendLocalGet(hash)
+	data := net.SendLocalGet(hash)
 
 	var newMsg msg
 	newMsg.Data = string(data)
@@ -30,7 +31,7 @@ func postData(c *gin.Context) {
 
 	data, _ := c.GetRawData()
 	newMsg.Data = string(data)
-	fmt.Println("[REST] storing",data)
+	fmt.Println("[REST] storing", data)
 
 	//TODO: use newMsg to store data, get hash
 	var hash string
