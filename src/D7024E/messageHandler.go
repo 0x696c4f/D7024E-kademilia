@@ -7,6 +7,9 @@ func (network *Network) MessageHandler(message Packet) Packet {
 	} else if message.RPC == "find_Node" {
 		return network.NewFindNodeResponsePacket(message)
 	}
+	else if message.RPC == "store_Value"{
+		return network.NewStoreResponsePacket(message)
+	}
 
 	return Packet{}
 }
@@ -29,6 +32,15 @@ func (network *Network) NewFindNodeResponsePacket(packMesssage Packet) Packet {
 		RPC:            "find_Node",
 		SendingContact: &network.Node.RoutingTable.me,
 		Message:        response,
+	}
+
+	return pack
+}
+
+func(network *Network) NewStoreResponsePacket(message Packet) Packet{
+	pack := Packet{
+		RPC:            "store_Value",
+		SendingContact: &network.Node.RoutingTable.me,
 	}
 
 	return pack
