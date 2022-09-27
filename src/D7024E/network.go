@@ -40,6 +40,7 @@ func (network *Network) Listen() {
 	// TODO
 	//1------------------
 	UDPaddress := GetUDPAddress(&network.Node.RoutingTable.me)
+	UDPaddress.IP = nil
 	Conn, listeningError := net.ListenUDP("udp", &UDPaddress)
 
 	if listeningError != nil {
