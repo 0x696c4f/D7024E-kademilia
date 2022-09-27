@@ -11,10 +11,10 @@ func (network *Network) MessageHandler(message Packet) Packet {
 		return network.NewFindNodeResponsePacket(message)
 	}
 	if message.RPC == "local_get" {
-		network.Node.LookupData(message.Message.TargetID.String())
+		return network.NewDataPacket(message)
 	}
 	if message.RPC == "local_put" {
-		network.Node.Store(message.Message.Data)
+		return network.NewHashPacket(message)
 	}
 
 	return Packet{}
@@ -55,6 +55,30 @@ func (network *Network) NewLocalPutPacket(message Packet) (pack Packet) {
 	pack = Packet{
 		RPC:            "local_put",
 		SendingContact: &network.Node.RoutingTable.me,
+	}
+	return
+}
+func (network *Network) NewHashPacket(message Packet) (pack Packet) {
+	network.Node.Store(message.Message.Data)
+	response := MessageBody {
+		TargetID: network.Node.Store(message.Message.Data),
+	}
+	pack = Packet{
+		RPC:            "hash",
+		SendingContact: &network.Node.RoutingTable.me,
+		Message: response,
+	}
+	return
+}
+
+func (network *Network) NewDataPacket(message Packet) (pack Packet) {
+	response := MessageBody {
+		Data: network.Node.LookupData(message.Message.TargetID.String()),
+	}
+	pack = Packet{
+		RPC:            "data",
+		SendingContact: &network.Node.RoutingTable.me,
+		Message: response,
 	}
 	return
 }
