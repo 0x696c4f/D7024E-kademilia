@@ -76,7 +76,7 @@ func (network *Network) Listen() {
 
 func NewNetwork(localIP string) *Network {
 	network := &Network{}
-	kad := network.NewKademlia(localIP)
+	kad := NewKademlia(localIP)
 	network.Node = &kad
 	return network
 }

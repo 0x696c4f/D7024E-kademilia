@@ -14,7 +14,7 @@ type Kademlia struct {
 	Shortlist    *ContactCandidates
 }
 
-func (network *Network) NewKademlia(ipAddress string) (node Kademlia) {
+func NewKademlia(ipAddress string) (node Kademlia) {
 	ID := NewKademliaID(HashData(ipAddress))
 	node.Me = NewContact(ID, ipAddress)
 	node.RoutingTable = NewRoutingTable(node.Me)
