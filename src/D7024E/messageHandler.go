@@ -1,7 +1,10 @@
 package main
 
+import "fmt"
+
 func (network *Network) MessageHandler(message Packet) Packet {
 
+	fmt.Println("[MSGHANDLER] got ",message.RPC)
 	if message.RPC == "ping" {
 		return network.NewPingResponsePacket(message)
 	} else if message.RPC == "find_Node" {
