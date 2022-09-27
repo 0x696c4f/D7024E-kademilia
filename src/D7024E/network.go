@@ -58,7 +58,9 @@ func (network *Network) Listen() {
 		message := ByteToPacket(buffert[0:step])
 		fmt.Println("recived: ", message.RPC)
 		//6-------------------
-		network.AddContact(*message.SendingContact)
+		if(message.RPC != "local_get"&& message.RPC != "local_put") {
+			network.AddContact(*message.SendingContact)
+		}
 		//7-------------------
 		response := network.MessageHandler(message)
 		//8-------------------
@@ -110,7 +112,9 @@ func (network *Network) UDPConnectionHandler(contact *Contact, msgPacket Packet)
 		return Packet{}, readError
 	}
 
-	network.AddContact(*response.SendingContact)
+	if(response.RPC != "local_get"&& response.RPC != "local_put") {
+		network.AddContact(*response.SendingContact)
+	}
 
 	return response, nil
 
