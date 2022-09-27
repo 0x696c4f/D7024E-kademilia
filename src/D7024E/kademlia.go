@@ -83,17 +83,37 @@ func (network *Network) LookupContact(target *Contact) *ContactCandidates {
 
 		return &shortList
 	} else {
-		emptyStuct := NewEmptyContactCandidates()
-		return &emptyStuct
+		emptyStruct := NewEmptyContactCandidates()
+		return &emptyStruct
 	}
 }
 
-func (kademlia *Kademlia) LookupData(hash string) {
-	// TODO
+/*
+The FIND_VALUE RPC behaves like FIND_NODE, returning the k nodes closest to the target identifier with one exception 
+	– if the RPC recipient has received a STORE for the given key, it returns the stored value.
+*/
+func (kademlia *Kademlia) LookupData(hash string) {// TODO
+	
 }
 
-func (kademlia *Kademlia) Store(data []byte) {
-	// TODO
+/*
+The sender of the STORE RPC provides a key and a block of data and requires that the recipient store the data and make it available for later retrieval by that key.
+*/
+func (kademlia *Kademlia) Store(data []byte) {// TODO
+	//create a new hashed contact
+	hashInput := HashData(String(data))
+	hashKademliaID := NewKademliaID(hashInput)
+	hashContact := NewContact(hashKademliaID, "")
+
+	//Find the closest nodes for the key
+	closestNodes := kademlia.LookupContact(&hashContact)
+
+	//Send the store RPC
+	for _, storeAtNode := range closestNodes.contacts{
+		network.SendStoreMessage(data, &storeAtNode)
+	}
+
+	fmt.Println("Store: ", hashKademliaID.String())
 }
 
 //(https://stackoverflow.com/questions/10701874/generating-the-sha-hash-of-a-string-using-golang)
