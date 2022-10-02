@@ -9,12 +9,13 @@ import (
 type MessageBody struct {
 	ContactList []Contact //shortList which is sent back
 	TargetID    *KademliaID
+	Data        []byte
 }
 
 type Network struct {
 	Node *Kademlia
 
-	storeValues map[KademliaID]string //Store data that is recived from the store RPC
+	StoreValues map[string][]byte //Store data that is recived from the store RPC
 }
 
 type Packet struct {
@@ -24,17 +25,21 @@ type Packet struct {
 }
 
 /*
-	1:Open UDPPort for it to listen in on.
-		1.1:What UDP address should we listen in on
-	2:Close the connection
-		answer: defer connection.Close()
-	3:Create for loop to handle the inputs
-	4:Read the input
-	5:convert into unmarshaldata
-	6:add contact to the bucket
-	7:handle inquary
-	8:Unmarhal data
-	9:send back respons
+1:Open UDPPort for it to listen in on.
+
+	1.1:What UDP address should we listen in on
+
+2:Close the connection
+
+	answer: defer connection.Close()
+
+3:Create for loop to handle the inputs
+4:Read the input
+5:convert into unmarshaldata
+6:add contact to the bucket
+7:handle inquary
+8:Unmarhal data
+9:send back respons
 */
 func (network *Network) Listen() {
 	// TODO
@@ -50,7 +55,7 @@ func (network *Network) Listen() {
 	//3------------------
 	for {
 		//4-------------------
-		buffert := make([]byte, 1000)
+		buffert := make([]byte, 3048)
 		fmt.Println("Listening")
 		step, readAddress, _ := Conn.ReadFromUDP(buffert)
 		//5-------------------
@@ -72,15 +77,22 @@ func (network *Network) Listen() {
 
 func NewNetwork(localIP string) *Network {
 	network := &Network{}
+	value := make(map[string][]byte) //store test
+	network.StoreValues = value      //store test
 	kad := NewKademlia(localIP)
 	network.Node = &kad
-	storeValues := make(map[KademliaID]string)
-	return network, storeValues
+	return network
 }
 
 func (network *Network) JoinNetwork(contactKnown *Contact) {
 	network.AddContact(*contactKnown)
 	network.LookupContact(&network.Node.RoutingTable.me)
+	data := []byte("data")                             //store test
+	fmt.Println("Data to be hashed #1: ", data)        //store test
+	hash := HashData(string(data))                     //store test
+	fmt.Println("Hash #1: ", hash)                     //store test
+	network.Store(data)                                //store test
+	fmt.Println("stored value: ", network.StoreValues) //store test
 }
 
 func (network *Network) UDPConnectionHandler(contact *Contact, msgPacket Packet) (Packet, error) {
@@ -126,7 +138,7 @@ func (network *Network) NewPacket(version string) (pack Packet) {
 	} else if version == "find_Node" {
 		pack.RPC = "find_Node"
 		return
-	}else if version == "store_Value"{
+	} else if version == "store_Value" {
 		pack.RPC = "store_Value"
 		return
 	}
@@ -164,22 +176,28 @@ func (network *Network) SendFindContactMessage(contact *Contact, target *Contact
 	}
 }
 
-func (network *Network) SendFindDataMessage(hash string) {// TODO
-	
+func (network *Network) SendFindDataMessage(hash string) { // TODO
+
 }
 
-func (network *Network) SendStoreMessage(data []byte, storeAtContact *Contact) {// TODO
+func (network *Network) SendStoreMessage(data []byte, storeAtContact *Contact) { // TODO
+	fmt.Println("value contact store at - ", storeAtContact, "value: ", data) //delete
 	pack := network.NewPacket("store_Value")
 	pack.Message = MessageBody{
-		TargetID: storeAtContact.ID,
+		Data: data,
 	}
-	
+	/*
+		fmt.Println("Packet info ", pack.Message)
+		packToByte := PacketToByte(pack)
+		fmt.Println("Packet to byte info ", packToByte)
+		byteToPack := ByteToPacket(packToByte)
+		fmt.Println("byte to packet info ", byteToPack.Message)
+	*/
 	response, err := network.UDPConnectionHandler(storeAtContact, pack)
 	if err == nil {
+		fmt.Println("responce", response, " error ", err) //delete
 		network.ResponseHandler(response)
 	} else {
 		fmt.Println(err)
 	}
-
-	return response, err
 }
