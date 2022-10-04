@@ -10,6 +10,7 @@ type MessageBody struct {
 	ContactList []Contact //shortList which is sent back
 	TargetID    *KademliaID
 	Data        []byte
+	Hash        string
 }
 
 type Network struct {
@@ -87,12 +88,20 @@ func NewNetwork(localIP string) *Network {
 func (network *Network) JoinNetwork(contactKnown *Contact) {
 	network.AddContact(*contactKnown)
 	network.LookupContact(&network.Node.RoutingTable.me)
-	data := []byte("data")                             //store test
-	fmt.Println("Data to be hashed #1: ", data)        //store test
-	hash := HashData(string(data))                     //store test
-	fmt.Println("Hash #1: ", hash)                     //store test
-	network.Store(data)                                //store test
-	fmt.Println("stored value: ", network.StoreValues) //store test
+	data1 := []byte("data") //store test
+	//fmt.Println("Data to be hashed #1: ", data1) //store test
+	//hash1 := HashData(string(data1))             //store test
+	//fmt.Println("Hash #1: ", hash1)              //store test
+	network.Store(data1) //store test
+
+	data2 := []byte("atad") //store test
+	//fmt.Println("Data to be hashed #1: ", data2) //store test
+	//hash2 := HashData(string(data2))             //store test
+	//fmt.Println("Hash #1: ", hash2)              //store test
+	network.Store(data2) //store test
+
+	network.LookupData("data") //find value test
+	network.LookupData("1234") //find value test
 }
 
 func (network *Network) UDPConnectionHandler(contact *Contact, msgPacket Packet) (Packet, error) {
@@ -138,6 +147,9 @@ func (network *Network) NewPacket(version string) (pack Packet) {
 	} else if version == "find_Node" {
 		pack.RPC = "find_Node"
 		return
+	} else if version == "find_Value" {
+		pack.RPC = "find_Value"
+		return
 	} else if version == "store_Value" {
 		pack.RPC = "store_Value"
 		return
@@ -159,7 +171,7 @@ func (network *Network) SendPingMessage(contact *Contact) (Packet, error) {
 }
 
 func (network *Network) SendFindContactMessage(contact *Contact, target *Contact) {
-	fmt.Println("value contact - ", contact) //delete
+	//fmt.Println("value contact - ", contact) //delete
 
 	pack := network.NewPacket("find_Node")
 	pack.Message = MessageBody{
@@ -169,19 +181,32 @@ func (network *Network) SendFindContactMessage(contact *Contact, target *Contact
 	response, err := network.UDPConnectionHandler(contact, pack) //TODO handle the output packet
 
 	if err == nil {
-		fmt.Println("responce", response, " error ", err) //delete
+		//fmt.Println("responce", response, " error ", err) //delete
 		network.ResponseHandler(response)
 	} else {
 		fmt.Println(err)
 	}
 }
 
-func (network *Network) SendFindDataMessage(hash string) { // TODO
+func (network *Network) SendFindDataMessage(hash string, contact Contact) { // TODO
+	//fmt.Println("value contact store at - ", contact, "value: ", hash) //delete
+	pack := network.NewPacket("find_Value")
+	pack.Message = MessageBody{
+		Hash: hash,
+	}
 
+	response, err := network.UDPConnectionHandler(&contact, pack) //TODO handle the output packet
+
+	if err == nil {
+		//fmt.Println("responce", response, " error ", err) //delete
+		network.ResponseHandler(response)
+	} else {
+		fmt.Println(err)
+	}
 }
 
 func (network *Network) SendStoreMessage(data []byte, storeAtContact *Contact) { // TODO
-	fmt.Println("value contact store at - ", storeAtContact, "value: ", data) //delete
+	//fmt.Println("value contact store at - ", storeAtContact, "value: ", data) //delete
 	pack := network.NewPacket("store_Value")
 	pack.Message = MessageBody{
 		Data: data,
@@ -195,7 +220,7 @@ func (network *Network) SendStoreMessage(data []byte, storeAtContact *Contact) {
 	*/
 	response, err := network.UDPConnectionHandler(storeAtContact, pack)
 	if err == nil {
-		fmt.Println("responce", response, " error ", err) //delete
+		//fmt.Println("responce", response, " error ", err) //delete
 		network.ResponseHandler(response)
 	} else {
 		fmt.Println(err)
