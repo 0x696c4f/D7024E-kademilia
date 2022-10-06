@@ -8,6 +8,8 @@ import (
 	"strconv"
 )
 
+var Port int
+
 func printHelpExit(msg string) {
 	helpText := "Usage:\nstart [port]\t\t start the first node of a kademlia network\njoin <ip> [port]\t join an existing network using the node ip:port as the entrypoint\nget <hash>\t\t get the object with hash from the network\nput <data>\t\t store data into the network\n\nThe default port always is 4000\n"
 	fmt.Println(msg+"\n\n", helpText)
@@ -19,28 +21,34 @@ func main() {
 		printHelpExit("No command supplied.")
 	}
 
-	port := 8080
+	Port = 8080
 	myIP := GetOutboundIP()
-	localIP := IpPortSerialize(myIP, port)
+	localIP := IpPortSerialize(myIP, Port)
 
 	network := NewNetwork(localIP)
 
+	normal := true
 	switch os.Args[1] {
 	case "start":
 		{
 			// start the network
 			if len(os.Args) >= 3 {
 				var err error
-				port, err = strconv.Atoi(os.Args[2])
+				Port, err = strconv.Atoi(os.Args[2])
 				if err != nil {
 					printHelpExit("Invalid port.")
 				}
 			}
-			fmt.Println("starting network on port", port)
+			fmt.Println("starting network on port", Port)
+			if len(os.Args) >= 4 {
+				if os.Args[3] == "test" {
+					normal = false
+				}
+			}
 		}
 	case "join":
 		{
-			remoteport := port
+			remoteport := Port
 			if len(os.Args) < 3 {
 				printHelpExit("No entrypoint given.")
 			}
@@ -54,6 +62,11 @@ func main() {
 				remoteport, err = strconv.Atoi(os.Args[3])
 				if err != nil {
 					printHelpExit("Invalid port.")
+				}
+			}
+			if len(os.Args) >= 5 {
+				if os.Args[4] == "test" {
+					normal = false
 				}
 			}
 
@@ -64,7 +77,7 @@ func main() {
 		}
 	case "ping":
 		{
-			remoteport := port
+			remoteport := Port
 			if len(os.Args) < 3 {
 				printHelpExit("No entrypoint given.")
 			}
@@ -78,6 +91,11 @@ func main() {
 				remoteport, err = strconv.Atoi(os.Args[3])
 				if err != nil {
 					printHelpExit("Invalid port.")
+				}
+			}
+			if len(os.Args) >= 5 {
+				if os.Args[4] == "test" {
+					normal = false
 				}
 			}
 
@@ -89,31 +107,37 @@ func main() {
 	case "get":
 		{
 			hash := os.Args[2]
+			if len(os.Args) >= 4 {
+				if os.Args[3] == "test" {
+					normal = false
+				}
+			}
 			fmt.Println("getting ", hash)
+			fmt.Println(network.SendLocalGet(hash))
 		}
 	case "put":
 		{
 			data := os.Args[2]
+			if len(os.Args) >= 4 {
+				if os.Args[3] == "test" {
+					normal = false
+				}
+			}
 			fmt.Println("storing ", data)
+			fmt.Println(network.SendLocalPut([]byte(data)))
 		}
 
 	default:
 		printHelpExit("Invalid command.")
 	}
+	go RestApi()
 
 	//Testing call for Listen
-	network.Listen()
-}
 
-func (network *Network) TestPing(ip net.IP) {
+	if normal {
+		network.Listen()
+	}
 
-	//create a contact
-	TestconnectIP := ip.String() + ":8080"
-	contactFirst := NewContact(NewKademliaID(HashData(TestconnectIP)), TestconnectIP) //IP address TODO
-	fmt.Println(contactFirst)
-
-	//call ping message in network SendPingMessage(contact)
-	network.SendPingMessage(&contactFirst)
 }
 
 func GetOutboundIP() net.IP {

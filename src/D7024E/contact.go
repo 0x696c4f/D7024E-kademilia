@@ -75,9 +75,10 @@ func (candidates *ContactCandidates) Len() int {
 }
 
 // Swap the position of the Contacts at i and j
-// WARNING does not check if either i or j is within range
 func (candidates *ContactCandidates) Swap(i, j int) {
-	candidates.contacts[i], candidates.contacts[j] = candidates.contacts[j], candidates.contacts[i]
+	if len(candidates.contacts) >= j && j >= 0 && len(candidates.contacts) >= i && i >= 0 {
+		candidates.contacts[i], candidates.contacts[j] = candidates.contacts[j], candidates.contacts[i]
+	}
 }
 
 // Less returns true if the Contact at index i is smaller than

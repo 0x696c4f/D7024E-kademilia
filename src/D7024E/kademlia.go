@@ -151,7 +151,6 @@ func (network *Network) Store(data []byte) *KademliaID { // TODO
 	}
 	fmt.Println("Store: ", hashKademliaID)
 	return hashKademliaID
-
 }
 
 // (https://stackoverflow.com/questions/10701874/generating-the-sha-hash-of-a-string-using-golang)

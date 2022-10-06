@@ -5,8 +5,9 @@ import (
 	"testing"
 )
 
-func TestResponseHandler(t *testing.T) {
-	fmt.Println("implement responseHandler testing")
+func TestNetworkUtilitys(t *testing.T) {
+	fmt.Println("implement networkUtilitys testing")
+
 	fmt.Println("-------------------------")
 	fmt.Println("")
 }

@@ -1,7 +1,7 @@
 package main
 
-/*
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -14,8 +14,10 @@ type msg struct {
 // getAlbums responds with the list of all albums as JSON.
 func getObject(c *gin.Context) {
 	hash := c.Param("hash")
-	//TODO: load data
-	data := "data with hash " + hash
+	fmt.Println("[REST] loading", hash)
+
+	var net = NewNetwork("127.0.0.1:54321")
+	data := net.SendLocalGet(hash)
 
 	var newMsg msg
 	newMsg.Data = string(data)
@@ -24,13 +26,16 @@ func getObject(c *gin.Context) {
 }
 
 func postData(c *gin.Context) {
+	var net = NewNetwork("127.0.0.1:54321")
 	var newMsg msg
 
 	data, _ := c.GetRawData()
 	newMsg.Data = string(data)
+	fmt.Println("[REST] storing", data)
 
 	//TODO: use newMsg to store data, get hash
-	hash := "abcd"
+	var hash string
+	hash = net.SendLocalPut(data)
 
 	c.Writer.Header().Set("Location", "/objects/"+hash)
 
@@ -43,6 +48,5 @@ func RestApi() {
 	router.GET("/objects/:hash", getObject)
 	router.POST("/objects", postData)
 
-	router.Run("localhost:8080")
+	router.Run("0.0.0.0:8080")
 }
-*/
