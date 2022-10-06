@@ -93,20 +93,6 @@ func NewNetwork(localIP string) *Network {
 func (network *Network) JoinNetwork(contactKnown *Contact) {
 	network.AddContact(*contactKnown)
 	network.LookupContact(&network.Node.RoutingTable.me)
-	data1 := []byte("data") //store test
-	//fmt.Println("Data to be hashed #1: ", data1) //store test
-	//hash1 := HashData(string(data1))             //store test
-	//fmt.Println("Hash #1: ", hash1)              //store test
-	network.Store(data1) //store test
-
-	data2 := []byte("atad") //store test
-	//fmt.Println("Data to be hashed #1: ", data2) //store test
-	//hash2 := HashData(string(data2))             //store test
-	//fmt.Println("Hash #1: ", hash2)              //store test
-	network.Store(data2) //store test
-
-	network.LookupData("data") //find value test
-	network.LookupData("1234") //find value test
 }
 
 func (network *Network) UDPConnectionHandler(contact *Contact, msgPacket Packet) (Packet, error) {
