@@ -90,6 +90,7 @@ func NewNetwork(localIP string) *Network {
 	network := &Network{}
 	value := make(map[string][]byte) //store test
 	network.StoreValues = value      //store test
+	network.TTLs := make(map[string][]Contact)
 	kad := NewKademlia(localIP)
 	network.Node = &kad
 	return network
