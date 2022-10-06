@@ -59,7 +59,7 @@ func (network *Network) NewFindNodeResponsePacket(packMesssage Packet) Packet {
 func (network *Network) NewRefreshResponsePacket(packMesssage Packet) Packet {
 	network.Mu.Lock()
 	defer network.Mu.Unlock()
-	network.TTLs[hash]=time.Now()
+	network.TTLs[packMesssage.Message.TargetID.String()]=time.Now()
 	network.Mu.Unlock()
 
 	pack := Packet{

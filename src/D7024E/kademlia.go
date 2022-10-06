@@ -4,7 +4,6 @@ import (
 	"crypto/sha1"
 	"encoding/hex"
 	"fmt"
-	"time"
 )
 
 // This Kademlia node
@@ -157,7 +156,7 @@ func (network *Network) Store(data []byte) *KademliaID { // TODO
 func (network *Network) Forget(hash string) {
 	network.Mu.Lock()
 	defer network.Mu.Unlock()
-	delete(network.refresh,hash)
+	delete(network.Refresh,hash)
 }
 
 

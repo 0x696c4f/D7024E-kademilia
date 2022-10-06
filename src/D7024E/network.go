@@ -6,7 +6,6 @@ import (
 	"os"
 	"time"
 	"sync"
-	"container/list"
 )
 
 type MessageBody struct {
@@ -23,7 +22,7 @@ type Network struct {
 	StoreValues map[string][]byte //Store data that is recived from the store RPC
 	TTLs map[string]time.Time
 
-	Refresh map[string]*list.List // map of hash -> node id to send refresh to, list of KademliaIDs
+	Refresh map[string]([](*Contact)) // map of hash -> node id to send refresh to, list of KademliaIDs
 }
 
 type Packet struct {
@@ -199,7 +198,7 @@ func (network *Network) SendLocalForget(hash string) {
 	}
 }
 
-func (network *Network) SendRefresh(target *KademliaID,hash string) []byte {
+func (network *Network) SendRefresh(target *Contact,hash string) []byte {
 	var pack = Packet{
 		SendingContact: &network.Node.RoutingTable.me,
 		RPC:            "refresh",
@@ -209,7 +208,7 @@ func (network *Network) SendRefresh(target *KademliaID,hash string) []byte {
 	}
 
 	fmt.Println("[NETWORK] send refresh for "+hash)
-	response, err := network.UDPConnectionHandler(&instance, pack)
+	response, err := network.UDPConnectionHandler(target, pack)
 	if err == nil {
 		fmt.Println("success")
 	} else {
@@ -339,14 +338,15 @@ func (network *Network) RefreshLoop() {
 	delay,_:=time.ParseDuration(string(TTL/2)+TTLunit) // TTL DEFINED HERE
 	for {
 		network.Mu.Lock()
-		refresh:=network.Refresh
-		network.Mu.Unlock()
-		for k,v := range refresh {
-			for n:=v.Front();n!=nil;n=n.Next() {
+		// TODO clone network.Refresh and unlock afterwards, replace network.Refresh by local copy
+		//network.Mu.Unlock()
+		for k,v := range network.Refresh {
+			for _,n := range v {
 				network.SendRefresh(n,k) // refresh data with hash k at node n
 			}
 		}
-		time.Sleep(time.Now().Add(delay))
+		network.Mu.Unlock()
+		time.Sleep(delay)
 
 	}
 }
