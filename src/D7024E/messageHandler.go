@@ -93,6 +93,7 @@ func (network *Network) NewStoreResponsePacket(message Packet) Packet {
 	}
 
 	return pack
+}
 
 func (network *Network) NewLocalGetPacket(message Packet) (pack Packet) {
 	pack = Packet{
