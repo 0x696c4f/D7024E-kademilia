@@ -97,19 +97,22 @@ A FIND_VALUE RPC includes a B=160-bit key. If a corresponding value is present o
 Otherwise the RPC is equivalent to a FIND_NODE and a set of k triples is returned.
 This is a primitive operation, not an iterative one.
 */
-func (network *Network) LookupData(hash string) { // TODO
+func (network *Network) LookupData(hash string) []byte { // TODO
 	//create a new hashed contact
-	hashInput := HashData(string(hash))
-	hashKademliaID := NewKademliaID(hashInput)
+	hashKademliaID := NewKademliaID(hash)
 	hashContact := NewContact(hashKademliaID, "")
 
 	//Find the closest nodes for the key
 	shortlist := network.LookupContact(&hashContact)
-
+	var data []byte
 	//Send the store RPC
 	for _, contact := range shortlist.contacts {
-		network.SendFindDataMessage(hashKademliaID.String(), contact)
+		data = network.SendFindDataMessage(hashKademliaID.String(), contact)
+		if data != nil {
+			break
+		}
 	}
+	return data
 }
 
 /*
@@ -131,7 +134,7 @@ Some consideration should also be given to the development of methods for handli
 Some values will be small and will fit in a UDP datagram. But some messages will be very large, over say 5 GB, and will need to be chunked.
 The chunks themselves might be very large relative to a UDP packet, typically on the order of 128 KB, so these chunks will have to be shredded into individual UDP packets.
 */
-func (network *Network) Store(data []byte) { // TODO
+func (network *Network) Store(data []byte) *KademliaID { // TODO
 	//create a new hashed contact
 	//fmt.Println("Data to be hashed #2: ", data)
 	hashInput := HashData(string(data))
@@ -146,8 +149,9 @@ func (network *Network) Store(data []byte) { // TODO
 	for _, storeAtNode := range closestNodes.contacts {
 		network.SendStoreMessage(data, &storeAtNode)
 	}
-
 	fmt.Println("Store: ", hashKademliaID)
+	return hashKademliaID
+
 }
 
 // (https://stackoverflow.com/questions/10701874/generating-the-sha-hash-of-a-string-using-golang)
