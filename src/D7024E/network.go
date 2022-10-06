@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 	"sync"
+	"container/list"
 )
 
 type MessageBody struct {
@@ -21,6 +22,8 @@ type Network struct {
 	Mu sync.Mutex
 	StoreValues map[string][]byte //Store data that is recived from the store RPC
 	TTLs map[string]time.Time
+
+	Refresh map[string]*list.List // map of hash -> node id to send refresh to
 }
 
 type Packet struct {
@@ -268,14 +271,15 @@ func (network *Network) SendStoreMessage(data []byte, storeAtContact *Contact) {
 func (network *Network) ForgetOld() {
 	defer network.Mu.Unlock()
 	for {
-		x,_:=time.ParseDuration("30s") // check at least every 30s
-		next:=time.Now().Add(x)
+		ttl,_:=time.ParseDuration("30s") // TTL DEFINED HERE
+		next:=time.Now().Add(ttl)
 		network.Mu.Lock()
 		for k,v := range network.TTLs {
-			if v.Before(time.Now()){
+			if v.Add(ttl).Before(time.Now()){
 				delete(network.TTLs,k)
+				delete(network.StoreValues,k)
 			} else {
-				if v.Before(next) {
+				if v.Add(ttl).Before(next) {
 					next=v
 				}
 			}

@@ -134,6 +134,7 @@ func main() {
 
 	//Testing call for Listen
 
+	go network.ForgetOld() // start cleanup of old values
 	if normal {
 		network.Listen()
 	}

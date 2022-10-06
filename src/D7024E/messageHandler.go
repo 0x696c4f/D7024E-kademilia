@@ -57,6 +57,7 @@ func (network *Network) NewFindValueResponsePacket(packMesssage Packet) Packet {
 	fmt.Println("message ", network.StoreValues[packMesssage.Message.Hash])
 	if value, found := network.StoreValues[packMesssage.Message.Hash]; found {
 		fmt.Println("The value was found!! ", string(value))
+		network.TTLs[packMesssage.Message.Hash]=time.Now()
 		response := MessageBody{
 			Data: value,
 		}
@@ -92,8 +93,7 @@ func (network *Network) NewStoreResponsePacket(message Packet) Packet {
 	network.Mu.Lock()
 	defer network.Mu.Unlock()
 	network.StoreValues[hashMessageData] = message.Message.Data
-	ttl,_ :=time.ParseDuration("30s") // TTL
-	network.TTLs[hashMessageData] = time.Now().Add(ttl)
+	network.TTLs[hashMessageData] = time.Now()
 	fmt.Println("mapList ", network.StoreValues)
 
 	pack := Packet{
