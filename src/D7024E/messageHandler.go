@@ -13,11 +13,9 @@ func (network *Network) MessageHandler(message Packet) Packet {
 		return network.NewFindValueResponsePacket(message)
 	} else if message.RPC == "store_Value" {
 		return network.NewStoreResponsePacket(message)
-	}
-	if message.RPC == "local_get" {
+	} else if message.RPC == "local_get" {
 		return network.NewDataPacket(message)
-	}
-	if message.RPC == "local_put" {
+	} else if message.RPC == "local_put" {
 		return network.NewHashPacket(message)
 	}
 
@@ -95,21 +93,6 @@ func (network *Network) NewStoreResponsePacket(message Packet) Packet {
 	return pack
 }
 
-func (network *Network) NewLocalGetPacket(message Packet) (pack Packet) {
-	pack = Packet{
-		RPC:            "local_get",
-		SendingContact: &network.Node.RoutingTable.me,
-	}
-	return
-}
-
-func (network *Network) NewLocalPutPacket(message Packet) (pack Packet) {
-	pack = Packet{
-		RPC:            "local_put",
-		SendingContact: &network.Node.RoutingTable.me,
-	}
-	return
-}
 func (network *Network) NewHashPacket(message Packet) (pack Packet) {
 	network.Store(message.Message.Data)
 	response := MessageBody{

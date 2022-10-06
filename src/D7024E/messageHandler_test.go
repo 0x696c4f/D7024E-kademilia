@@ -15,6 +15,32 @@ func TestMessageHandler(t *testing.T) {
 	messageEmpty := networkOther.NewPacket("empty")
 	messagePing := networkOther.NewPacket("ping")
 	messageFind := networkOther.NewPacket("find_Node")
+	messageFindValue := networkOther.NewPacket("find_Value")
+	messageFindValue.Message = MessageBody{
+		Hash: HashData("hejsan"),
+	}
+	b := []byte("ABC€")
+
+	networkOther.Store(b)
+	messageStore := networkOther.NewPacket("store_Value")
+
+	var messageLocalGet = Packet{
+		SendingContact: &networkMe.Node.RoutingTable.me,
+		RPC:            "local_get",
+		Message: MessageBody{
+			TargetID: NewKademliaID(HashData("hejsan")),
+		},
+	}
+	data := []byte("ABC€")
+
+	var messageLocalPut = Packet{
+		SendingContact: &networkMe.Node.RoutingTable.me,
+		RPC:            "local_put",
+		Message: MessageBody{
+			Data: data,
+		},
+	}
+
 	messageFind.Message = MessageBody{
 		TargetID: target.ID,
 	}
@@ -22,6 +48,12 @@ func TestMessageHandler(t *testing.T) {
 	networkMe.MessageHandler(messageEmpty)
 	networkMe.MessageHandler(messagePing)
 	networkMe.MessageHandler(messageFind)
+	networkMe.MessageHandler(messageFindValue)
+	networkMe.MessageHandler(messageStore)
+
+	fmt.Println("test localget")
+	networkMe.MessageHandler(messageLocalGet)
+	networkMe.MessageHandler(messageLocalPut)
 
 	fmt.Println("-------------------------")
 	fmt.Println("")

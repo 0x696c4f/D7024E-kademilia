@@ -99,10 +99,13 @@ This is a primitive operation, not an iterative one.
 */
 func (network *Network) LookupData(hash string) []byte { // TODO
 	//create a new hashed contact
+
 	hashKademliaID := NewKademliaID(hash)
+
 	hashContact := NewContact(hashKademliaID, "")
 
 	//Find the closest nodes for the key
+
 	shortlist := network.LookupContact(&hashContact)
 	var data []byte
 	//Send the store RPC
