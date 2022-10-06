@@ -21,9 +21,10 @@ RUN apt install -yq netcat iproute2 git
 # go compile
 ENV GOPATH=/kademlia/
 ENV GO111MODULE=off
-COPY . /kademlia
+RUN mkdir -p /kademlia/src/D7024E
 RUN go get github.com/gin-gonic/gin
 WORKDIR /kademlia/src/D7024E
+COPY ./src/D7024E /kademlia/src/D7024E
 RUN go install
 
 #ENTRYPOINT go run /src/main.go
