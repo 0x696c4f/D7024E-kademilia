@@ -152,7 +152,7 @@ func (network *Network) NewHashPacket(message Packet) (pack Packet) {
 	return
 }
 func (network *Network) NewForgetResponsePacket(message Packet) (pack Packet) {
-	network.Forget(message.Message.TargetID.String()))
+	network.Forget(message.Message.TargetID.String())
 	pack = Packet{
 		RPC:            "forgot",
 		SendingContact: &network.Node.RoutingTable.me,

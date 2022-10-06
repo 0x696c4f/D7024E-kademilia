@@ -32,8 +32,6 @@ type Packet struct {
 	Message        MessageBody
 }
 
-TTL:=30
-TTLunit:="s"
 /*
 1:Open UDPPort for it to listen in on.
 
@@ -312,6 +310,8 @@ func (network *Network) SendStoreMessage(data []byte, storeAtContact *Contact) {
 	}
 }
 func (network *Network) ForgetOld() {
+	TTL:=30
+	TTLunit:="s"
 	defer network.Mu.Unlock()
 	ttl,_:=time.ParseDuration(string(TTL)+TTLunit) // TTL DEFINED HERE
 	for {
@@ -333,6 +333,8 @@ func (network *Network) ForgetOld() {
 	}
 }
 func (network *Network) RefreshLoop() {
+	TTL:=30
+	TTLunit:="s"
 	defer network.Mu.Unlock()
 	delay,_:=time.ParseDuration(string(TTL/2)+TTLunit) // TTL DEFINED HERE
 	for {
@@ -340,7 +342,7 @@ func (network *Network) RefreshLoop() {
 		refresh:=network.Refresh
 		network.Mu.Unlock()
 		for k,v := range refresh {
-			for n := range v {
+			for n:=v.Front();n!=nil;n=n.Next() {
 				network.SendRefresh(n,k) // refresh data with hash k at node n
 			}
 		}
