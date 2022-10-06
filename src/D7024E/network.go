@@ -5,6 +5,7 @@ import (
 	"net"
 	"os"
 	"time"
+	"sync"
 )
 
 type MessageBody struct {
@@ -17,7 +18,9 @@ type MessageBody struct {
 type Network struct {
 	Node *Kademlia
 
+	Mu sync.Mutex
 	StoreValues map[string][]byte //Store data that is recived from the store RPC
+	TTLs map[string]time.Time
 }
 
 type Packet struct {
@@ -260,5 +263,25 @@ func (network *Network) SendStoreMessage(data []byte, storeAtContact *Contact) {
 		network.ResponseHandler(response)
 	} else {
 		fmt.Println(err)
+	}
+}
+func (network *Network) ForgetOld() {
+	defer network.Mu.Unlock()
+	for {
+		x,_:=time.ParseDuration("30s") // check at least every 30s
+		next:=time.Now().Add(x)
+		network.Mu.Lock()
+		for k,v := range network.TTLs {
+			if v.Before(time.Now()){
+				delete(network.TTLs,k)
+			} else {
+				if v.Before(next) {
+					next=v
+				}
+			}
+		}
+		network.Mu.Unlock()
+		time.Sleep(next.Sub(time.Now()))
+
 	}
 }

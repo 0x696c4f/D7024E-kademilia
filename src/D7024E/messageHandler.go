@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"time"
+)
 
 func (network *Network) MessageHandler(message Packet) Packet {
 
@@ -49,6 +52,8 @@ func (network *Network) NewFindNodeResponsePacket(packMesssage Packet) Packet {
 
 func (network *Network) NewFindValueResponsePacket(packMesssage Packet) Packet {
 	//Sends the data object from the map if the hash matches a stored key
+	network.Mu.Lock()
+	defer network.Mu.Unlock()
 	fmt.Println("message ", network.StoreValues[packMesssage.Message.Hash])
 	if value, found := network.StoreValues[packMesssage.Message.Hash]; found {
 		fmt.Println("The value was found!! ", string(value))
@@ -84,7 +89,11 @@ func (network *Network) NewStoreResponsePacket(message Packet) Packet {
 	//valueID := NewKademliaID(hashMessageData)
 	fmt.Println("data to be stored: ", hashMessageData)
 	//fmt.Println("what is the new kademliaID: ", valueID)
+	network.Mu.Lock()
+	defer network.Mu.Unlock()
 	network.StoreValues[hashMessageData] = message.Message.Data
+	ttl,_ :=time.ParseDuration("30s") // TTL
+	network.TTLs[hashMessageData] = time.Now().Add(ttl)
 	fmt.Println("mapList ", network.StoreValues)
 
 	pack := Packet{
