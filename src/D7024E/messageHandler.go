@@ -23,6 +23,12 @@ func (network *Network) MessageHandler(message Packet) Packet {
 	if message.RPC == "local_put" {
 		return network.NewHashPacket(message)
 	}
+	if message.RPC == "local_forget" {
+		return network.NewForgetResponsePacket(message)
+	}
+	if message.RPC == "refresh" {
+		return network.NewRefreshResponsePacket(message)
+	}
 
 	return Packet{}
 }
@@ -45,6 +51,20 @@ func (network *Network) NewFindNodeResponsePacket(packMesssage Packet) Packet {
 		RPC:            "find_Node",
 		SendingContact: &network.Node.RoutingTable.me,
 		Message:        response,
+	}
+
+	return pack
+}
+
+func (network *Network) NewRefreshResponsePacket(packMesssage Packet) Packet {
+	network.Mu.Lock()
+	defer network.Mu.Unlock()
+	network.TTLs[hash]=time.Now()
+	network.Mu.Unlock()
+
+	pack := Packet{
+		RPC:            "refreshed",
+		SendingContact: &network.Node.RoutingTable.me,
 	}
 
 	return pack
@@ -128,6 +148,14 @@ func (network *Network) NewHashPacket(message Packet) (pack Packet) {
 		RPC:            "hash",
 		SendingContact: &network.Node.RoutingTable.me,
 		Message:        response,
+	}
+	return
+}
+func (network *Network) NewForgetResponsePacket(message Packet) (pack Packet) {
+	network.Forget(message.Message.TargetID.String()))
+	pack = Packet{
+		RPC:            "forgot",
+		SendingContact: &network.Node.RoutingTable.me,
 	}
 	return
 }

@@ -23,7 +23,7 @@ type Network struct {
 	StoreValues map[string][]byte //Store data that is recived from the store RPC
 	TTLs map[string]time.Time
 
-	Refresh map[string]*list.List // map of hash -> node id to send refresh to
+	Refresh map[string]*list.List // map of hash -> node id to send refresh to, list of KademliaIDs
 }
 
 type Packet struct {
@@ -32,6 +32,8 @@ type Packet struct {
 	Message        MessageBody
 }
 
+TTL:=30
+TTLunit:="s"
 /*
 1:Open UDPPort for it to listen in on.
 
@@ -128,7 +130,7 @@ func (network *Network) UDPConnectionHandler(contact *Contact, msgPacket Packet)
 		return Packet{}, readError
 	}
 
-	if response.RPC != "local_get" && response.RPC != "local_put" {
+	if response.RPC != "local_get" && response.RPC != "local_put" && response.RPC != "local_forget"{
 		fmt.Println("[NETWORK] adding contact for RPC type", response.RPC)
 		network.AddContact(*response.SendingContact)
 	}
@@ -178,6 +180,47 @@ func (network *Network) SendLocalGet(hash string) []byte {
 	}
 	return response.Message.Data
 }
+
+func (network *Network) SendLocalForget(hash string) {
+	var pack = Packet{
+		SendingContact: &network.Node.RoutingTable.me,
+		RPC:            "local_forget",
+		Message: MessageBody{
+			TargetID: NewKademliaID(hash),
+		},
+	}
+
+	fmt.Println("[NETWORK] send local forget to ", fmt.Sprintf("127.0.0.1:%d", Port))
+	instance := NewContact(NewRandomKademliaID(), fmt.Sprintf("127.0.0.1:%d", Port))
+	_, err := network.UDPConnectionHandler(&instance, pack)
+	if err == nil {
+		fmt.Println("success")
+	} else {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+}
+
+func (network *Network) SendRefresh(target *KademliaID,hash string) []byte {
+	var pack = Packet{
+		SendingContact: &network.Node.RoutingTable.me,
+		RPC:            "refresh",
+		Message: MessageBody{
+			TargetID: NewKademliaID(hash),
+		},
+	}
+
+	fmt.Println("[NETWORK] send refresh for "+hash)
+	response, err := network.UDPConnectionHandler(&instance, pack)
+	if err == nil {
+		fmt.Println("success")
+	} else {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	return response.Message.Data
+}
+
 func (network *Network) SendLocalPut(data []byte) string {
 	var pack = Packet{
 		SendingContact: &network.Node.RoutingTable.me,
@@ -270,8 +313,8 @@ func (network *Network) SendStoreMessage(data []byte, storeAtContact *Contact) {
 }
 func (network *Network) ForgetOld() {
 	defer network.Mu.Unlock()
+	ttl,_:=time.ParseDuration(string(TTL)+TTLunit) // TTL DEFINED HERE
 	for {
-		ttl,_:=time.ParseDuration("30s") // TTL DEFINED HERE
 		next:=time.Now().Add(ttl)
 		network.Mu.Lock()
 		for k,v := range network.TTLs {
@@ -286,6 +329,22 @@ func (network *Network) ForgetOld() {
 		}
 		network.Mu.Unlock()
 		time.Sleep(next.Sub(time.Now()))
+
+	}
+}
+func (network *Network) RefreshLoop() {
+	defer network.Mu.Unlock()
+	delay,_:=time.ParseDuration(string(TTL/2)+TTLunit) // TTL DEFINED HERE
+	for {
+		network.Mu.Lock()
+		refresh:=network.Refresh
+		network.Mu.Unlock()
+		for k,v := range refresh {
+			for n := range v {
+				network.SendRefresh(n,k) // refresh data with hash k at node n
+			}
+		}
+		time.Sleep(time.Now().Add(delay))
 
 	}
 }

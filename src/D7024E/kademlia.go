@@ -4,6 +4,7 @@ import (
 	"crypto/sha1"
 	"encoding/hex"
 	"fmt"
+	"time"
 )
 
 // This Kademlia node
@@ -152,6 +153,14 @@ func (network *Network) Store(data []byte) *KademliaID { // TODO
 	fmt.Println("Store: ", hashKademliaID)
 	return hashKademliaID
 }
+
+func (network *Network) Forget(hash string) {
+	network.Mu.Lock()
+	defer network.Mu.Unlock()
+	delete(network.refresh,hash)
+}
+
+
 
 // (https://stackoverflow.com/questions/10701874/generating-the-sha-hash-of-a-string-using-golang)
 func HashData(msg string) string {
