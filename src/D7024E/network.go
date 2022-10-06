@@ -65,8 +65,8 @@ func (network *Network) Listen() {
 		message := ByteToPacket(buffert[0:step])
 		fmt.Println("recived: ", message.RPC)
 		//6-------------------
-		if(message.RPC != "local_get"&& message.RPC != "local_put") {
-			fmt.Println("[NETWORK] adding contact for RPC type",message.RPC)
+		if message.RPC != "local_get" && message.RPC != "local_put" {
+			fmt.Println("[NETWORK] adding contact for RPC type", message.RPC)
 			network.AddContact(*message.SendingContact)
 		}
 		//7-------------------
@@ -136,8 +136,8 @@ func (network *Network) UDPConnectionHandler(contact *Contact, msgPacket Packet)
 		return Packet{}, readError
 	}
 
-	if(response.RPC != "local_get"&& response.RPC != "local_put") {
-		fmt.Println("[NETWORK] adding contact for RPC type",response.RPC)
+	if response.RPC != "local_get" && response.RPC != "local_put" {
+		fmt.Println("[NETWORK] adding contact for RPC type", response.RPC)
 		network.AddContact(*response.SendingContact)
 	}
 
@@ -166,17 +166,17 @@ func (network *Network) NewPacket(version string) (pack Packet) {
 	return Packet{}
 }
 
-func (network *Network) SendLocalGet(hash string) ([]byte) {
-	var pack = Packet {
+func (network *Network) SendLocalGet(hash string) []byte {
+	var pack = Packet{
 		SendingContact: &network.Node.RoutingTable.me,
-		RPC: "local_get",
+		RPC:            "local_get",
 		Message: MessageBody{
 			TargetID: NewKademliaID(hash),
 		},
 	}
 
-	fmt.Println("[NETWORK] send local get to ",fmt.Sprintf("127.0.0.1:%d",Port))
-	instance := NewContact(NewRandomKademliaID(),fmt.Sprintf("127.0.0.1:%d",Port))
+	fmt.Println("[NETWORK] send local get to ", fmt.Sprintf("127.0.0.1:%d", Port))
+	instance := NewContact(NewRandomKademliaID(), fmt.Sprintf("127.0.0.1:%d", Port))
 	response, err := network.UDPConnectionHandler(&instance, pack)
 	if err == nil {
 		network.ResponseHandler(response)
@@ -186,17 +186,17 @@ func (network *Network) SendLocalGet(hash string) ([]byte) {
 	}
 	return response.Message.Data
 }
-func (network *Network) SendLocalPut(data []byte) (string) {
-	var pack = Packet {
+func (network *Network) SendLocalPut(data []byte) string {
+	var pack = Packet{
 		SendingContact: &network.Node.RoutingTable.me,
-		RPC: "local_put",
+		RPC:            "local_put",
 		Message: MessageBody{
 			Data: data,
 		},
 	}
 
-	fmt.Println("[NETWORK] send local put to ",fmt.Sprintf("127.0.0.1:%d",Port))
-	instance := NewContact(NewRandomKademliaID(),fmt.Sprintf("127.0.0.1:%d",Port))
+	fmt.Println("[NETWORK] send local put to ", fmt.Sprintf("127.0.0.1:%d", Port))
+	instance := NewContact(NewRandomKademliaID(), fmt.Sprintf("127.0.0.1:%d", Port))
 	response, err := network.UDPConnectionHandler(&instance, pack)
 	if err == nil {
 		network.ResponseHandler(response)
@@ -237,7 +237,7 @@ func (network *Network) SendFindContactMessage(contact *Contact, target *Contact
 	}
 }
 
-func (network *Network) SendFindDataMessage(hash string, contact Contact) { // TODO
+func (network *Network) SendFindDataMessage(hash string, contact Contact) []byte { // TODO
 	//fmt.Println("value contact store at - ", contact, "value: ", hash) //delete
 	pack := network.NewPacket("find_Value")
 	pack.Message = MessageBody{
@@ -252,6 +252,7 @@ func (network *Network) SendFindDataMessage(hash string, contact Contact) { // T
 	} else {
 		fmt.Println(err)
 	}
+	return response.Message.Data
 }
 
 func (network *Network) SendStoreMessage(data []byte, storeAtContact *Contact) { // TODO

@@ -4,7 +4,7 @@ import "fmt"
 
 func (network *Network) MessageHandler(message Packet) Packet {
 
-	fmt.Println("[MSGHANDLER] got ",message.RPC)
+	fmt.Println("[MSGHANDLER] got ", message.RPC)
 	if message.RPC == "ping" {
 		return network.NewPingResponsePacket(message)
 	} else if message.RPC == "find_Node" {
@@ -111,26 +111,26 @@ func (network *Network) NewLocalPutPacket(message Packet) (pack Packet) {
 	return
 }
 func (network *Network) NewHashPacket(message Packet) (pack Packet) {
-	network.Node.Store(message.Message.Data)
-	response := MessageBody {
-		TargetID: network.Node.Store(message.Message.Data),
+	network.Store(message.Message.Data)
+	response := MessageBody{
+		TargetID: network.Store(message.Message.Data),
 	}
 	pack = Packet{
 		RPC:            "hash",
 		SendingContact: &network.Node.RoutingTable.me,
-		Message: response,
+		Message:        response,
 	}
 	return
 }
 
 func (network *Network) NewDataPacket(message Packet) (pack Packet) {
-	response := MessageBody {
-		Data: network.Node.LookupData(message.Message.TargetID.String()),
+	response := MessageBody{
+		Data: network.LookupData(message.Message.TargetID.String()),
 	}
 	pack = Packet{
 		RPC:            "data",
 		SendingContact: &network.Node.RoutingTable.me,
-		Message: response,
+		Message:        response,
 	}
 	return
 }
