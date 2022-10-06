@@ -42,11 +42,9 @@ func (network *Network) NewFindNodeResponsePacket(packMesssage Packet) Packet {
 
 func (network *Network) NewFindValueResponsePacket(packMesssage Packet) Packet {
 	//Sends the data object from the map if the hash matches a stored key
-	//var value []byte
-	//value = network.StoreValues[packMesssage.Message.Hash]
-
+	fmt.Println("message ", network.StoreValues[packMesssage.Message.Hash])
 	if value, found := network.StoreValues[packMesssage.Message.Hash]; found {
-		fmt.Println("The value was found!! ", value)
+		fmt.Println("The value was found!! ", string(value))
 		response := MessageBody{
 			Data: value,
 		}
@@ -59,9 +57,9 @@ func (network *Network) NewFindValueResponsePacket(packMesssage Packet) Packet {
 		return pack
 	}
 
-	//fmt.Println("The value was not found!! ", value)
+	fmt.Println("The value was not found!! ")
 	response := MessageBody{
-		ContactList: network.Node.RoutingTable.FindClosestContacts(packMesssage.Message.TargetID, network.Node.Alpha),
+		ContactList: network.Node.RoutingTable.FindClosestContacts(NewKademliaID(packMesssage.Message.Hash), network.Node.Alpha),
 	}
 
 	pack := Packet{
