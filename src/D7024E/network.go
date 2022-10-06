@@ -22,7 +22,7 @@ type Network struct {
 	StoreValues map[string][]byte //Store data that is recived from the store RPC
 	TTLs map[string]time.Time
 
-	Refresh map[string]([](*Contact)) // map of hash -> node id to send refresh to, list of KademliaIDs
+	Refresh map[string]([]Contact) // map of hash -> node id to send refresh to, list of KademliaIDs
 }
 
 type Packet struct {
@@ -342,7 +342,7 @@ func (network *Network) RefreshLoop() {
 		//network.Mu.Unlock()
 		for k,v := range network.Refresh {
 			for _,n := range v {
-				network.SendRefresh(n,k) // refresh data with hash k at node n
+				network.SendRefresh(&n,k) // refresh data with hash k at node n
 			}
 		}
 		network.Mu.Unlock()

@@ -149,6 +149,9 @@ func (network *Network) Store(data []byte) *KademliaID { // TODO
 	for _, storeAtNode := range closestNodes.contacts {
 		network.SendStoreMessage(data, &storeAtNode)
 	}
+	storedAt:=make([]Contact,len(closestNodes.contacts))
+	copy(storedAt,closestNodes.contacts)
+	network.Refresh[hashInput]=storedAt
 	fmt.Println("Store: ", hashKademliaID)
 	return hashKademliaID
 }
