@@ -151,6 +151,8 @@ func (network *Network) Store(data []byte) *KademliaID { // TODO
 	}
 	storedAt:=make([]Contact,len(closestNodes.contacts))
 	copy(storedAt,closestNodes.contacts)
+	network.Mu.Lock()
+	defer network.Mu.Unlock()
 	network.Refresh[hashInput]=storedAt
 	fmt.Println("Store: ", hashKademliaID)
 	return hashKademliaID

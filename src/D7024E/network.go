@@ -333,8 +333,7 @@ func (network *Network) ForgetOld() {
 				delete(network.StoreValues,k)
 			} else {
 				if expires.Before(next) {
-					fmt.Println("Updated next check")
-					next=v
+					next=expires
 				}
 			}
 		}
