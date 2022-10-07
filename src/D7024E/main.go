@@ -114,6 +114,7 @@ func main() {
 			}
 			fmt.Println("getting ", hash)
 			fmt.Println(string(network.SendLocalGet(hash)))
+			return
 		}
 	case "put":
 		{
@@ -125,6 +126,7 @@ func main() {
 			}
 			fmt.Println("storing ", data)
 			fmt.Println(network.SendLocalPut([]byte(data)))
+			return
 		}
 	case "forget":
 		{
@@ -133,6 +135,7 @@ func main() {
 			}
 			fmt.Println("forgetting", hash)
 			network.SendLocalForget(hash)
+			return
 		}
 
 	default:
@@ -143,6 +146,7 @@ func main() {
 	//Testing call for Listen
 
 	go network.ForgetOld() // start cleanup of old values
+	go network.RefreshLoop()
 	if normal {
 		network.Listen()
 	}

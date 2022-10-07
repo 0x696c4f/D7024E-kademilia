@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 	"sync"
+	"strconv"
 )
 
 type MessageBody struct {
@@ -90,8 +91,10 @@ func NewNetwork(localIP string) *Network {
 	network := &Network{}
 	value := make(map[string][]byte) //store test
 	network.StoreValues = value      //store test
-	ttls := make(map[string][]Contact)
+	ttls := make(map[string]time.Time)
 	network.TTLs = ttls
+	refresh := make(map[string][]Contact)
+	network.Refresh = refresh
 	kad := NewKademlia(localIP)
 	network.Node = &kad
 	return network
@@ -314,21 +317,29 @@ func (network *Network) ForgetOld() {
 	TTL:=30
 	TTLunit:="s"
 	defer network.Mu.Unlock()
-	ttl,_:=time.ParseDuration(string(TTL)+TTLunit) // TTL DEFINED HERE
+	ttl,err:=time.ParseDuration(strconv.Itoa(TTL)+TTLunit) // TTL DEFINED HERE
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(ttl)
 	for {
-		next:=time.Now().Add(ttl)
+		next:=time.Now().Add(ttl) // in 30s
 		network.Mu.Lock()
 		for k,v := range network.TTLs {
-			if v.Add(ttl).Before(time.Now()){
+			expires := v.Add(ttl)
+			if expires.Before(time.Now()){ // time added plus ttl = expires at 
+				fmt.Println("Timeout for ",k)
 				delete(network.TTLs,k)
 				delete(network.StoreValues,k)
 			} else {
-				if v.Add(ttl).Before(next) {
+				if expires.Before(next) {
+					fmt.Println("Updated next check")
 					next=v
 				}
 			}
 		}
 		network.Mu.Unlock()
+		fmt.Println("Next forget check in ",next.Sub(time.Now()))
 		time.Sleep(next.Sub(time.Now()))
 
 	}
@@ -337,13 +348,14 @@ func (network *Network) RefreshLoop() {
 	TTL:=30
 	TTLunit:="s"
 	defer network.Mu.Unlock()
-	delay,_:=time.ParseDuration(string(TTL/2)+TTLunit) // TTL DEFINED HERE
+	delay,_:=time.ParseDuration(strconv.Itoa(TTL/2)+TTLunit) // TTL DEFINED HERE
 	for {
 		network.Mu.Lock()
 		// TODO clone network.Refresh and unlock afterwards, replace network.Refresh by local copy
 		//network.Mu.Unlock()
 		for k,v := range network.Refresh {
 			for _,n := range v {
+				fmt.Println("Sending refresh for ",k)
 				network.SendRefresh(&n,k) // refresh data with hash k at node n
 			}
 		}
