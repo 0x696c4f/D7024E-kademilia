@@ -203,7 +203,7 @@ func (network *Network) SendLocalForget(hash string) {
 	}
 }
 
-func (network *Network) SendRefresh(target *Contact, hash string) ([]byte, error) {
+func (network *Network) SendRefresh(target *Contact, hash string) []byte {
 	var pack = Packet{
 		SendingContact: &network.Node.RoutingTable.me,
 		RPC:            "refresh",
@@ -218,13 +218,12 @@ func (network *Network) SendRefresh(target *Contact, hash string) ([]byte, error
 		fmt.Println("success")
 	} else {
 		fmt.Println(err)
-		//os.Exit(1)
-		return []byte(""), err
+		os.Exit(1)
 	}
-	return response.Message.Data, nil
+	return response.Message.Data
 }
 
-func (network *Network) SendLocalPut(data []byte) (string, error) {
+func (network *Network) SendLocalPut(data []byte) string {
 	var pack = Packet{
 		SendingContact: &network.Node.RoutingTable.me,
 		RPC:            "local_put",
@@ -240,10 +239,9 @@ func (network *Network) SendLocalPut(data []byte) (string, error) {
 		network.ResponseHandler(response)
 	} else {
 		fmt.Println(err)
-		//os.Exit(1)
-		return "", err
+		os.Exit(1)
 	}
-	return response.Message.TargetID.String(), nil
+	return response.Message.TargetID.String()
 }
 
 func (network *Network) SendPingMessage(contact *Contact) (Packet, error) {

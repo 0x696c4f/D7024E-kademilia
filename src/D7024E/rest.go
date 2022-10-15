@@ -34,15 +34,13 @@ func postData(c *gin.Context) {
 	fmt.Println("[REST] storing", data)
 
 	//TODO: use newMsg to store data, get hash
+	var hash string
+	hash = net.SendLocalPut(data)
 
-	hash, err := net.SendLocalPut(data)
-	if err == nil {
-		c.Writer.Header().Set("Location", "/objects/"+hash)
+	c.Writer.Header().Set("Location", "/objects/"+hash)
 
-		// Add the new album to the slice.
-		c.IndentedJSON(http.StatusCreated, newMsg)
-	}
-
+	// Add the new album to the slice.
+	c.IndentedJSON(http.StatusCreated, newMsg)
 }
 
 func RestApi() {

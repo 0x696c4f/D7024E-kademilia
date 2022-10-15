@@ -16,9 +16,11 @@ func (network *Network) MessageHandler(message Packet) Packet {
 		return network.NewFindValueResponsePacket(message)
 	} else if message.RPC == "store_Value" {
 		return network.NewStoreResponsePacket(message)
-	} else if message.RPC == "local_get" {
+	}
+	if message.RPC == "local_get" {
 		return network.NewDataPacket(message)
-	} else if message.RPC == "local_put" {
+	}
+	if message.RPC == "local_put" {
 		return network.NewHashPacket(message)
 	}
 	if message.RPC == "local_forget" {
@@ -57,7 +59,7 @@ func (network *Network) NewFindNodeResponsePacket(packMesssage Packet) Packet {
 func (network *Network) NewRefreshResponsePacket(packMesssage Packet) Packet {
 	network.Mu.Lock()
 	defer network.Mu.Unlock()
-	network.TTLs[packMesssage.Message.TargetID.String()]=time.Now()
+	network.TTLs[packMesssage.Message.TargetID.String()] = time.Now()
 
 	pack := Packet{
 		RPC:            "refreshed",
@@ -74,7 +76,7 @@ func (network *Network) NewFindValueResponsePacket(packMesssage Packet) Packet {
 	fmt.Println("message ", network.StoreValues[packMesssage.Message.Hash])
 	if value, found := network.StoreValues[packMesssage.Message.Hash]; found {
 		fmt.Println("The value was found!! ", string(value))
-		network.TTLs[packMesssage.Message.Hash]=time.Now()
+		network.TTLs[packMesssage.Message.Hash] = time.Now()
 		response := MessageBody{
 			Data: value,
 		}
@@ -121,6 +123,21 @@ func (network *Network) NewStoreResponsePacket(message Packet) Packet {
 	return pack
 }
 
+func (network *Network) NewLocalGetPacket(message Packet) (pack Packet) {
+	pack = Packet{
+		RPC:            "local_get",
+		SendingContact: &network.Node.RoutingTable.me,
+	}
+	return
+}
+
+func (network *Network) NewLocalPutPacket(message Packet) (pack Packet) {
+	pack = Packet{
+		RPC:            "local_put",
+		SendingContact: &network.Node.RoutingTable.me,
+	}
+	return
+}
 func (network *Network) NewHashPacket(message Packet) (pack Packet) {
 	network.Store(message.Message.Data)
 	response := MessageBody{
