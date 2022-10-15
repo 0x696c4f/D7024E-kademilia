@@ -34,9 +34,13 @@ type Packet struct {
 
 /*
 1:Open UDPPort for it to listen in on.
+
 	1.1:What UDP address should we listen in on
+
 2:Close the connection
+
 	answer: defer connection.Close()
+
 3:Create for loop to handle the inputs
 4:Read the input
 5:convert into unmarshaldata
