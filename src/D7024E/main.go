@@ -113,7 +113,7 @@ func main() {
 				}
 			}
 			fmt.Println("getting ", hash)
-			network.SendLocalGet(hash)
+			fmt.Println(network.SendLocalGet(hash))
 			return
 		}
 	case "put":
