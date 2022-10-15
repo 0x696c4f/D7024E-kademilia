@@ -113,7 +113,7 @@ func main() {
 				}
 			}
 			fmt.Println("getting ", hash)
-			fmt.Println(string(network.SendLocalGet(hash)))
+			network.SendLocalGet(hash)
 			return
 		}
 	case "put":
@@ -125,7 +125,14 @@ func main() {
 				}
 			}
 			fmt.Println("storing ", data)
-			fmt.Println(network.SendLocalPut([]byte(data)))
+
+			response, err := network.SendLocalPut([]byte(data))
+
+			if err == nil {
+				fmt.Println(response)
+			} else {
+				fmt.Println("error with put")
+			}
 			return
 		}
 	case "forget":

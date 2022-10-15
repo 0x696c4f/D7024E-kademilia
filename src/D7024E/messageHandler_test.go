@@ -41,6 +41,22 @@ func TestMessageHandler(t *testing.T) {
 		},
 	}
 
+	var messageRefresh = Packet{
+		SendingContact: &networkMe.Node.RoutingTable.me,
+		RPC:            "refresh",
+		Message: MessageBody{
+			TargetID: NewKademliaID(HashData("hejsan")),
+		},
+	}
+
+	var messageForget = Packet{
+		SendingContact: &networkMe.Node.RoutingTable.me,
+		RPC:            "local_forget",
+		Message: MessageBody{
+			TargetID: NewKademliaID(HashData("hejsan")),
+		},
+	}
+
 	messageFind.Message = MessageBody{
 		TargetID: target.ID,
 	}
@@ -54,6 +70,9 @@ func TestMessageHandler(t *testing.T) {
 	fmt.Println("test localget")
 	networkMe.MessageHandler(messageLocalGet)
 	networkMe.MessageHandler(messageLocalPut)
+
+	networkMe.MessageHandler(messageRefresh)
+	networkMe.MessageHandler(messageForget)
 
 	fmt.Println("-------------------------")
 	fmt.Println("")

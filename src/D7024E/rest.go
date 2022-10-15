@@ -17,12 +17,12 @@ func getObject(c *gin.Context) {
 	fmt.Println("[REST] loading", hash)
 
 	var net = NewNetwork("127.0.0.1:54321")
-	data := net.SendLocalGet(hash)
-
-	var newMsg msg
-	newMsg.Data = string(data)
-
-	c.IndentedJSON(http.StatusOK, newMsg)
+	data, err := net.SendLocalGet(hash)
+	if err == nil {
+		var newMsg msg
+		newMsg.Data = string(data)
+		c.IndentedJSON(http.StatusOK, newMsg)
+	}
 }
 
 func postData(c *gin.Context) {
@@ -35,12 +35,15 @@ func postData(c *gin.Context) {
 
 	//TODO: use newMsg to store data, get hash
 	var hash string
-	hash = net.SendLocalPut(data)
+	var err error
+	hash, err = net.SendLocalPut(data)
+	if err == nil {
+		c.Writer.Header().Set("Location", "/objects/"+hash)
 
-	c.Writer.Header().Set("Location", "/objects/"+hash)
+		// Add the new album to the slice.
+		c.IndentedJSON(http.StatusCreated, newMsg)
+	}
 
-	// Add the new album to the slice.
-	c.IndentedJSON(http.StatusCreated, newMsg)
 }
 
 func RestApi() {
