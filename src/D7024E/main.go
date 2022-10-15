@@ -113,9 +113,9 @@ func main() {
 				}
 			}
 			fmt.Println("getting ", hash)
-			res,err := network.SendLocalGet(hash))
+			res,err := network.SendLocalGet(hash)
 			if err==nil{
-				fmt.Println(res)
+				fmt.Println(string(res))
 			} else {
 				fmt.Println("error with get")
 			}
