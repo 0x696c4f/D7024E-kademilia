@@ -152,9 +152,22 @@ func (network *Network) Store(data []byte) *KademliaID { // TODO
 	for _, storeAtNode := range closestNodes.contacts {
 		network.SendStoreMessage(data, &storeAtNode)
 	}
+	storedAt:=make([]Contact,len(closestNodes.contacts))
+	copy(storedAt,closestNodes.contacts)
+	network.Mu.Lock()
+	defer network.Mu.Unlock()
+	network.Refresh[hashInput]=storedAt
 	fmt.Println("Store: ", hashKademliaID)
 	return hashKademliaID
 }
+
+func (network *Network) Forget(hash string) {
+	network.Mu.Lock()
+	defer network.Mu.Unlock()
+	delete(network.Refresh,hash)
+}
+
+
 
 // (https://stackoverflow.com/questions/10701874/generating-the-sha-hash-of-a-string-using-golang)
 func HashData(msg string) string {

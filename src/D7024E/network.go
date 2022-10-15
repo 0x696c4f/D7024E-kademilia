@@ -5,6 +5,8 @@ import (
 	"net"
 	"os"
 	"time"
+	"sync"
+	"strconv"
 )
 
 type MessageBody struct {
@@ -17,7 +19,11 @@ type MessageBody struct {
 type Network struct {
 	Node *Kademlia
 
+	Mu sync.Mutex
 	StoreValues map[string][]byte //Store data that is recived from the store RPC
+	TTLs map[string]time.Time
+
+	Refresh map[string]([]Contact) // map of hash -> node id to send refresh to, list of KademliaIDs
 }
 
 type Packet struct {
@@ -85,6 +91,10 @@ func NewNetwork(localIP string) *Network {
 	network := &Network{}
 	value := make(map[string][]byte) //store test
 	network.StoreValues = value      //store test
+	ttls := make(map[string]time.Time)
+	network.TTLs = ttls
+	refresh := make(map[string][]Contact)
+	network.Refresh = refresh
 	kad := NewKademlia(localIP)
 	network.Node = &kad
 	return network
@@ -122,7 +132,7 @@ func (network *Network) UDPConnectionHandler(contact *Contact, msgPacket Packet)
 		return Packet{}, readError
 	}
 
-	if response.RPC != "local_get" && response.RPC != "local_put" {
+	if response.RPC != "local_get" && response.RPC != "local_put" && response.RPC != "local_forget"{
 		fmt.Println("[NETWORK] adding contact for RPC type", response.RPC)
 		network.AddContact(*response.SendingContact)
 	}
@@ -172,6 +182,47 @@ func (network *Network) SendLocalGet(hash string) []byte {
 	}
 	return response.Message.Data
 }
+
+func (network *Network) SendLocalForget(hash string) {
+	var pack = Packet{
+		SendingContact: &network.Node.RoutingTable.me,
+		RPC:            "local_forget",
+		Message: MessageBody{
+			TargetID: NewKademliaID(hash),
+		},
+	}
+
+	fmt.Println("[NETWORK] send local forget to ", fmt.Sprintf("127.0.0.1:%d", Port))
+	instance := NewContact(NewRandomKademliaID(), fmt.Sprintf("127.0.0.1:%d", Port))
+	_, err := network.UDPConnectionHandler(&instance, pack)
+	if err == nil {
+		fmt.Println("success")
+	} else {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+}
+
+func (network *Network) SendRefresh(target *Contact,hash string) []byte {
+	var pack = Packet{
+		SendingContact: &network.Node.RoutingTable.me,
+		RPC:            "refresh",
+		Message: MessageBody{
+			TargetID: NewKademliaID(hash),
+		},
+	}
+
+	fmt.Println("[NETWORK] send refresh for "+hash)
+	response, err := network.UDPConnectionHandler(target, pack)
+	if err == nil {
+		fmt.Println("success")
+	} else {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	return response.Message.Data
+}
+
 func (network *Network) SendLocalPut(data []byte) string {
 	var pack = Packet{
 		SendingContact: &network.Node.RoutingTable.me,
@@ -260,5 +311,55 @@ func (network *Network) SendStoreMessage(data []byte, storeAtContact *Contact) {
 		network.ResponseHandler(response)
 	} else {
 		fmt.Println(err)
+	}
+}
+func (network *Network) ForgetOld() {
+	TTL:=30
+	TTLunit:="s"
+	defer network.Mu.Unlock()
+	ttl,err:=time.ParseDuration(strconv.Itoa(TTL)+TTLunit) // TTL DEFINED HERE
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(ttl)
+	for {
+		next:=time.Now().Add(ttl) // in 30s
+		network.Mu.Lock()
+		for k,v := range network.TTLs {
+			expires := v.Add(ttl)
+			if expires.Before(time.Now()){ // time added plus ttl = expires at 
+				fmt.Println("Timeout for ",k)
+				delete(network.TTLs,k)
+				delete(network.StoreValues,k)
+			} else {
+				if expires.Before(next) {
+					next=expires
+				}
+			}
+		}
+		network.Mu.Unlock()
+		fmt.Println("Next forget check in ",next.Sub(time.Now()))
+		time.Sleep(next.Sub(time.Now()))
+
+	}
+}
+func (network *Network) RefreshLoop() {
+	TTL:=30
+	TTLunit:="s"
+	defer network.Mu.Unlock()
+	delay,_:=time.ParseDuration(strconv.Itoa(TTL/2)+TTLunit) // TTL DEFINED HERE
+	for {
+		network.Mu.Lock()
+		// TODO clone network.Refresh and unlock afterwards, replace network.Refresh by local copy
+		//network.Mu.Unlock()
+		for k,v := range network.Refresh {
+			for _,n := range v {
+				fmt.Println("Sending refresh for ",k)
+				network.SendRefresh(&n,k) // refresh data with hash k at node n
+			}
+		}
+		network.Mu.Unlock()
+		time.Sleep(delay)
+
 	}
 }

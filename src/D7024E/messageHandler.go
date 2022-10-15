@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"time"
+)
 
 func (network *Network) MessageHandler(message Packet) Packet {
 
@@ -17,6 +20,12 @@ func (network *Network) MessageHandler(message Packet) Packet {
 		return network.NewDataPacket(message)
 	} else if message.RPC == "local_put" {
 		return network.NewHashPacket(message)
+	}
+	if message.RPC == "local_forget" {
+		return network.NewForgetResponsePacket(message)
+	}
+	if message.RPC == "refresh" {
+		return network.NewRefreshResponsePacket(message)
 	}
 
 	return Packet{}
@@ -45,11 +54,27 @@ func (network *Network) NewFindNodeResponsePacket(packMesssage Packet) Packet {
 	return pack
 }
 
+func (network *Network) NewRefreshResponsePacket(packMesssage Packet) Packet {
+	network.Mu.Lock()
+	defer network.Mu.Unlock()
+	network.TTLs[packMesssage.Message.TargetID.String()]=time.Now()
+
+	pack := Packet{
+		RPC:            "refreshed",
+		SendingContact: &network.Node.RoutingTable.me,
+	}
+
+	return pack
+}
+
 func (network *Network) NewFindValueResponsePacket(packMesssage Packet) Packet {
 	//Sends the data object from the map if the hash matches a stored key
+	network.Mu.Lock()
+	defer network.Mu.Unlock()
 	fmt.Println("message ", network.StoreValues[packMesssage.Message.Hash])
 	if value, found := network.StoreValues[packMesssage.Message.Hash]; found {
 		fmt.Println("The value was found!! ", string(value))
+		network.TTLs[packMesssage.Message.Hash]=time.Now()
 		response := MessageBody{
 			Data: value,
 		}
@@ -82,7 +107,10 @@ func (network *Network) NewStoreResponsePacket(message Packet) Packet {
 	//valueID := NewKademliaID(hashMessageData)
 	fmt.Println("data to be stored: ", hashMessageData)
 	//fmt.Println("what is the new kademliaID: ", valueID)
+	network.Mu.Lock()
+	defer network.Mu.Unlock()
 	network.StoreValues[hashMessageData] = message.Message.Data
+	network.TTLs[hashMessageData] = time.Now()
 	fmt.Println("mapList ", network.StoreValues)
 
 	pack := Packet{
@@ -102,6 +130,14 @@ func (network *Network) NewHashPacket(message Packet) (pack Packet) {
 		RPC:            "hash",
 		SendingContact: &network.Node.RoutingTable.me,
 		Message:        response,
+	}
+	return
+}
+func (network *Network) NewForgetResponsePacket(message Packet) (pack Packet) {
+	network.Forget(message.Message.TargetID.String())
+	pack = Packet{
+		RPC:            "forgot",
+		SendingContact: &network.Node.RoutingTable.me,
 	}
 	return
 }
