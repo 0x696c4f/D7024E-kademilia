@@ -34,13 +34,9 @@ type Packet struct {
 
 /*
 1:Open UDPPort for it to listen in on.
-
 	1.1:What UDP address should we listen in on
-
 2:Close the connection
-
 	answer: defer connection.Close()
-
 3:Create for loop to handle the inputs
 4:Read the input
 5:convert into unmarshaldata
@@ -162,9 +158,7 @@ func (network *Network) NewPacket(version string) (pack Packet) {
 	return Packet{}
 }
 
-func (network *Network) SendLocalGet(hash string) ([]byte, error) {
-	fmt.Println("Am I here")
-
+func (network *Network) SendLocalGet(hash string) []byte {
 	var pack = Packet{
 		SendingContact: &network.Node.RoutingTable.me,
 		RPC:            "local_get",
@@ -173,7 +167,6 @@ func (network *Network) SendLocalGet(hash string) ([]byte, error) {
 		},
 	}
 
-	fmt.Println("Am I here")
 	fmt.Println("[NETWORK] send local get to ", fmt.Sprintf("127.0.0.1:%d", Port))
 	instance := NewContact(NewRandomKademliaID(), fmt.Sprintf("127.0.0.1:%d", Port))
 	response, err := network.UDPConnectionHandler(&instance, pack)
@@ -181,10 +174,9 @@ func (network *Network) SendLocalGet(hash string) ([]byte, error) {
 		network.ResponseHandler(response)
 	} else {
 		fmt.Println(err)
-		//os.Exit(1)
-		return []byte(""), err
+		os.Exit(1)
 	}
-	return response.Message.Data, nil
+	return response.Message.Data
 }
 
 func (network *Network) SendLocalForget(hash string) {
@@ -203,7 +195,7 @@ func (network *Network) SendLocalForget(hash string) {
 		fmt.Println("success")
 	} else {
 		fmt.Println(err)
-		os.Exit(2)
+		os.Exit(1)
 	}
 }
 
@@ -222,12 +214,12 @@ func (network *Network) SendRefresh(target *Contact, hash string) []byte {
 		fmt.Println("success")
 	} else {
 		fmt.Println(err)
-		//os.Exit(3)
+		os.Exit(1)
 	}
 	return response.Message.Data
 }
 
-func (network *Network) SendLocalPut(data []byte) (string, error) {
+func (network *Network) SendLocalPut(data []byte) string {
 	var pack = Packet{
 		SendingContact: &network.Node.RoutingTable.me,
 		RPC:            "local_put",
@@ -243,10 +235,9 @@ func (network *Network) SendLocalPut(data []byte) (string, error) {
 		network.ResponseHandler(response)
 	} else {
 		fmt.Println(err)
-		//os.Exit(4)
-		return "", err
+		os.Exit(1)
 	}
-	return response.Message.TargetID.String(), nil
+	return response.Message.TargetID.String()
 }
 
 func (network *Network) SendPingMessage(contact *Contact) (Packet, error) {
