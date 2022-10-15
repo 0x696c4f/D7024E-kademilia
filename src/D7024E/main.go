@@ -125,14 +125,13 @@ func main() {
 				}
 			}
 			fmt.Println("storing ", data)
-			fmt.Println(network.SendLocalPut([]byte(data)))
+			network.SendLocalPut([]byte(data))
 			return
 		}
 	case "forget":
 		{
 			hash := os.Args[2]
-			if len(os.Args) >= 4 {
-			}
+
 			fmt.Println("forgetting", hash)
 			network.SendLocalForget(hash)
 			return
