@@ -28,7 +28,7 @@ func TestArgs(t *testing.T) {
 		{".", "ping", "172.17.1.30", "8080", "test"},
 
 		//{".", "get", "", "HashValue", "test"},
-		{".", "put", "", "HashValue", "test"},
+		//{".", "put", "", "HashValue", "test"},
 		//{".", "forget", "", "HashValue", "test"},
 	}
 	for _, tc := range cases {
