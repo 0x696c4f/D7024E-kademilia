@@ -13,6 +13,8 @@ func TestBucket(t *testing.T) {
 		network.AddContact(NewContact(NewRandomKademliaID(), "localhost:8001"))
 	}
 
+	bucket := newBucket()
+	bucket.Len()
 	fmt.Println("-------------------------")
 	fmt.Println("")
 }
